@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hartalega Foresight - Process Trend Dashboard</title>
+<title>Hartalega Foresight - Process Detailed Dashboard</title>
 <link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png?v=2">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -37,24 +37,41 @@
     z-index: 0;
   }
 
-  /* Header */
-  .l-header {
+  /* Main Top Header */
+  .l-top-banner {
     position: relative;
+    z-index: 20;
+    text-align: center;
+    padding: 24px 32px 16px;
+    background: linear-gradient(180deg, rgba(10,22,40,0.95) 0%, rgba(10,22,40,0.8) 100%);
+    border-bottom: 1px solid rgba(255,190,0,0.05);
+  }
+
+  .l-main-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(255,190,0,0.1);
+  }
+  .l-main-title span { color: #FFBE00; }
+
+  /* Control Bar (Moved below Header) */
+  .l-control-bar {
+    position: relative;
+    z-index: 20;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 32px;
+    padding: 12px 32px;
+    background: rgba(10,22,40,0.9);
     border-bottom: 1px solid rgba(255,190,0,0.15);
-    background: rgba(10,22,40,0.95);
-    z-index: 20;
     backdrop-filter: blur(10px);
   }
 
-  .l-header-left {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-  }
+  .l-header-left, .l-header-right { display: flex; align-items: center; gap: 24px; }
 
   .l-back {
     display: flex;
@@ -70,7 +87,7 @@
     text-decoration: none;
   }
   .l-back:hover { color: #FFBE00; border-color: rgba(255,190,0,0.5); background: rgba(255,190,0,0.06); }
-  .l-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .l-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
 
   /* Dropdowns */
   .l-selector-group {
@@ -98,12 +115,6 @@
 
   .l-divider { color: rgba(200,210,230,0.3); }
 
-  .l-header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
   .l-date-selector {
     display: flex;
     align-items: center;
@@ -114,14 +125,20 @@
 
   .l-date-select {
     background: rgba(255,190,0,0.05);
-    color: #e8eaf0;
+    color: #FFBE00;
     border: 1px solid rgba(255,190,0,0.2);
     padding: 6px 12px;
     border-radius: 6px;
     font-family: 'Inter', sans-serif;
     font-size: 13px;
+    font-weight: 500;
     outline: none;
     cursor: pointer;
+  }
+  /* FIXED: Ensure options don't blend into the background */
+  .l-date-select option {
+    background: #0a1628;
+    color: #e8eaf0;
   }
 
   /* Main Content */
@@ -181,42 +198,77 @@
     border-color: rgba(255,190,0,0.3);
   }
 
-  /* Dashboard Panels */
   .l-panel { display: none; }
   .l-panel.active { display: block; }
 
-  /* Charts Grid */
-  .l-charts-grid {
+  /* Accordion Tanks */
+  .l-tank-group {
+    background: rgba(10,22,40,0.5);
+    border: 1px solid rgba(255,190,0,0.15);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .l-tank-header {
+    background: rgba(255,190,0,0.05);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .l-tank-header:hover { background: rgba(255,190,0,0.1); }
+  .l-tank-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #e8eaf0;
+    letter-spacing: 1px;
+  }
+  .l-tank-icon {
+    width: 24px;
+    height: 24px;
+    stroke: #FFBE00;
+    fill: none;
+    stroke-width: 2;
+    transition: transform 0.3s ease;
+  }
+  .l-tank-content {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
+    padding: 24px;
   }
+  .l-tank-content.collapsed { display: none; }
+  .l-tank-header.collapsed { border-bottom-color: transparent; }
 
+  /* Charts */
   .l-chart-card {
-    background: rgba(10,22,40,0.7);
-    border: 1px solid rgba(255,190,0,0.15);
-    border-radius: 10px;
-    padding: 20px;
-  }
-  .l-chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    border-bottom: 1px dashed rgba(255,190,0,0.1);
-    padding-bottom: 12px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,190,0,0.1);
+    border-radius: 8px;
+    padding: 16px;
   }
   .l-chart-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(200,210,230,0.7);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
+  .l-chart-title::before { content:''; display:block; width:12px; height:3px; background:#FFBE00; border-radius:2px;}
   .l-chart-wrapper {
     position: relative;
-    height: 250px;
+    height: 220px;
     width: 100%;
   }
+
 </style>
 </head>
 <body>
@@ -224,7 +276,11 @@
 <div class="l-page">
   <div class="l-gridbg"></div>
 
-  <header class="l-header">
+  <div class="l-top-banner">
+    <h1 class="l-main-title">Production <span>Detailed</span> Dashboard</h1>
+  </div>
+
+  <header class="l-control-bar">
     <div class="l-header-left">
       <a href="../hartalega_production_landing.html" class="l-back">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
@@ -273,11 +329,11 @@
     </div>
 
     <div id="panel-cleaning" class="l-panel active">
-      <div class="l-charts-grid" id="cleaningChartsGrid"></div>
+      <div id="cleaningChartsContainer"></div>
     </div>
 
     <div id="panel-coagulant" class="l-panel">
-      <div class="l-charts-grid" id="coagulantChartsGrid"></div>
+      <div id="coagulantChartsContainer"></div>
     </div>
 
     <div id="panel-oven" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
@@ -290,27 +346,18 @@
 
 <script>
 // --- 1. PLANT & LINE NAVIGATION LOGIC ---
-const config = {
-  plants: 9,
-  linesPerPlant: 12
-};
+const config = { plants: 9, linesPerPlant: 12 };
 
 function initSelectors() {
   const pSelect = document.getElementById('plantSelect');
-  const lSelect = document.getElementById('lineSelect');
-  
   for(let i=1; i<=config.plants; i++) {
     pSelect.options.add(new Option(`PLANT ${i}`, i));
   }
   
   const hash = window.location.hash;
   const match = hash.match(/#P(\d+)L(\d+)/);
-  
   let pNum = 1, lNum = 1;
-  if(match) {
-    pNum = parseInt(match[1]);
-    lNum = parseInt(match[2]);
-  }
+  if(match) { pNum = parseInt(match[1]); lNum = parseInt(match[2]); }
   
   pSelect.value = pNum;
   populateLines(pNum, lNum);
@@ -322,32 +369,17 @@ function populateLines(plantNum, selectLine) {
   lSelect.innerHTML = '';
   const start = ((plantNum - 1) * config.linesPerPlant) + 1;
   const end = start + config.linesPerPlant - 1;
-  
-  for(let i=start; i<=end; i++) {
-    lSelect.options.add(new Option(`LINE ${i}`, i));
-  }
-  
-  // Also add RND lines if it's plant 8 (based on previous logic)
-  if(plantNum == 8) {
-    lSelect.options.add(new Option(`LINE 105 (RND)`, 105));
-  }
-  
+  for(let i=start; i<=end; i++) lSelect.options.add(new Option(`LINE ${i}`, i));
+  if(plantNum == 8) lSelect.options.add(new Option(`LINE 105 (RND)`, 105));
   if(selectLine) lSelect.value = selectLine;
 }
 
 function handleNavigationChange() {
   const pSelect = document.getElementById('plantSelect');
   const lSelect = document.getElementById('lineSelect');
-  
-  if(event.target.id === 'plantSelect') {
-    populateLines(pSelect.value); // Re-populate lines if plant changes
-  }
-  
-  // Update URL hash without reloading page
+  if(event.target.id === 'plantSelect') populateLines(pSelect.value);
   window.history.pushState(null, null, `#P${pSelect.value}L${lSelect.value}`);
   document.title = `Hartalega Foresight - P${pSelect.value} L${lSelect.value} Trends`;
-  
-  // Re-fetch product and re-draw charts for the new line
   fetchProduct();
   renderAllCharts();
 }
@@ -356,28 +388,13 @@ function handleNavigationChange() {
 async function fetchProduct() {
   const display = document.getElementById('productDisplay');
   try {
-    // Attempt to fetch from the specific directory
     const response = await fetch('../resource/product_masterlist.txt');
     if (!response.ok) throw new Error('File not found');
     const text = await response.text();
-    
-    // Simulate finding the product for this line (For demo, we just pick a random line from the file)
     const lines = text.split('\n').filter(line => line.trim() !== '');
-    if(lines.length > 0) {
-       // Random selection for demo purposes
-       const randomProduct = lines[Math.floor(Math.random() * lines.length)];
-       display.innerText = randomProduct;
-    } else {
-       display.innerText = "Nitrile Examination Glove (3.5g) - Standard Blue";
-    }
+    display.innerText = lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)] : "Nitrile Examination Glove (3.5g)";
   } catch (error) {
-    // Fallback if file doesn't exist locally yet
-    console.warn("Could not load product_masterlist.txt, using fallback.");
-    const fallbacks = [
-      "Nitrile Examination Glove (3.2g) - Cobalt Blue",
-      "Latex Surgical Glove (Powder-Free) - Natural",
-      "Nitrile Industrial Glove (4.5g) - Black"
-    ];
+    const fallbacks = ["Nitrile Examination Glove (3.2g) - Cobalt Blue", "Latex Surgical Glove - Natural", "Nitrile Industrial Glove (4.5g)"];
     display.innerText = fallbacks[Math.floor(Math.random() * fallbacks.length)];
   }
 }
@@ -386,15 +403,29 @@ async function fetchProduct() {
 function switchTab(tabId) {
   document.querySelectorAll('.l-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.l-panel').forEach(p => p.classList.remove('active'));
-  
   event.target.classList.add('active');
   document.getElementById(`panel-${tabId}`).classList.add('active');
 }
 
-// --- 4. CHARTS CONFIGURATION & RENDERING ---
-const chartInstances = []; // Keep track to destroy old ones
+// --- 4. ACCORDION LOGIC ---
+function toggleTank(element) {
+  const content = element.nextElementSibling;
+  const icon = element.querySelector('.l-tank-icon');
+  if (content.classList.contains('collapsed')) {
+    content.classList.remove('collapsed');
+    element.classList.remove('collapsed');
+    icon.style.transform = 'rotate(180deg)';
+  } else {
+    content.classList.add('collapsed');
+    element.classList.add('collapsed');
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
 
-// Structure defining the dashboards
+// --- 5. CHARTS CONFIGURATION & RENDERING ---
+const chartInstances = [];
+
+// Raw parameter lists
 const processData = {
   cleaning: {
     "Acid Tank": ["CAA Acid Flow Rate (L/hr)", "Acid Strength (%)", "Temp (°C)"],
@@ -402,35 +433,43 @@ const processData = {
     "Acid Shower": ["Raw Water Flow Rate (L/hr)"],
     "Alkaline Tank": ["Raw Water Flow Rate (L/hr)", "CAA Alkali Flow Rate (L/hr)", "Alkali Strength (%)", "Temp (°C)"],
     "Hot Bath": ["Raw Water Flow Rate (L/hr)", "Temperature (°C)"],
-    "Cleaning Brush": ["Raw Water Flow Rate (L/hr)", "Status (1=On, 0=Off)"],
-    "Hot Rinse": ["Temperature (°C)", "Status (1=On, 0=Off)"],
+    "Cleaning Brush": ["Raw Water Flow Rate (L/hr)", "Status (On/Off)"],
+    "Hot Rinse": ["Temperature (°C)", "Status (On/Off)"],
     "Hot Water": ["Temperature (°C)", "Hot Water Flow Rate (L/hr)", "pH"],
-    "Hot Water Blower": ["Status (1=On, 0=Off)"]
+    "Hot Water Blower": ["Status (On/Off)"]
   },
   coagulant: {
-    "Coagulant": ["Temperature (°C)", "Coagulant Level (mm)", "Coagulant pH", "CN Strength (%)", "PFCA Concentration (%)", "Pump Speed (Hz)", "Stirrer Speed (Hz)"],
-    "Latex": ["Temperature (°C)", "Latex Level (mm)", "Latex pH", "TSC (%)", "Stirrer Speed (Hz)"]
+    "Coagulant Tank": ["Temperature (°C)", "Coagulant Level (mm)", "Coagulant pH", "CN Strength (%)", "PFCA Concentration (%)", "Pump Speed (Hz)", "Stirrer Speed (Hz)"],
+    "Latex Tank": ["Temperature (°C)", "Latex Level (mm)", "Latex pH", "TSC (%)", "Stirrer Speed (Hz)"]
   }
 };
 
-// Colors for multiple lines in a single chart
-const chartColors = [
-  '#FFBE00', '#22c55e', '#3b82f6', '#f43f5e', '#a855f7', '#06b6d4', '#f97316'
-];
+const chartColors = ['#FFBE00', '#22c55e', '#3b82f6', '#f43f5e', '#a855f7', '#06b6d4'];
 
-// Helper to generate mock time-series data
-function generateMockData(hours, count) {
-  const data = [];
-  const labels = [];
+// Helper to determine group name & data ranges based on units
+function getUnitInfo(paramName) {
+  if (paramName.includes('(L/hr)')) return { unit: "Flow Rate (L/hr)", min: 1200, max: 2500, step: false };
+  if (paramName.includes('(%)')) return { unit: "Concentration (%)", min: 1, max: 15, step: false };
+  if (paramName.includes('(°C)') || paramName.includes('Temp')) return { unit: "Temperature (°C)", min: 45, max: 80, step: false };
+  if (paramName.includes('pH')) return { unit: "pH Level", min: 4, max: 10, step: false };
+  if (paramName.includes('(mm)')) return { unit: "Tank Level (mm)", min: 600, max: 950, step: false };
+  if (paramName.includes('(Hz)')) return { unit: "Motor Speed (Hz)", min: 30, max: 60, step: false };
+  if (paramName.includes('(On/Off)')) return { unit: "Equipment Status", min: 0, max: 1, step: true };
+  return { unit: "Measurement", min: 10, max: 100, step: false };
+}
+
+function generateMockData(hours, count, min, max, isStep) {
+  const data = [], labels = [];
   const now = new Date();
-  
   for(let i=count; i>=0; i--) {
     let d = new Date(now.getTime() - (i * (hours/count) * 60 * 60 * 1000));
     labels.push(d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-    
-    // Generate somewhat stable random numbers
-    let base = 50 + (Math.random() * 20);
-    data.push(base + (Math.random() * 5 - 2.5));
+    if (isStep) {
+      data.push(Math.random() > 0.15 ? 1 : 0); // Mostly ON
+    } else {
+      let base = min + (Math.random() * (max - min));
+      data.push(base);
+    }
   }
   return { labels, data };
 }
@@ -438,121 +477,123 @@ function generateMockData(hours, count) {
 function buildChartsForSection(sectionKey, containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
-  
   const sections = processData[sectionKey];
   const hours = parseInt(document.getElementById('durationSelect').value);
-  const dataPoints = hours > 24 ? 40 : 20; // more points for longer durations
-  
-  // Global defaults for Chart.js
+  const dataPoints = hours > 24 ? 40 : 20; 
+
   Chart.defaults.color = 'rgba(200,210,230,0.6)';
   Chart.defaults.font.family = 'Inter';
 
-  Object.keys(sections).forEach((processName, index) => {
-    const parameters = sections[processName];
+  let chartIndex = 0;
+
+  Object.keys(sections).forEach((tankName) => {
+    const allParams = sections[tankName];
     
-    // Create HTML structure
-    const card = document.createElement('div');
-    card.className = 'l-chart-card';
-    card.innerHTML = `
-      <div class="l-chart-header">
-        <div class="l-chart-title">${processName}</div>
-      </div>
-      <div class="l-chart-wrapper">
-        <canvas id="chart-${sectionKey}-${index}"></canvas>
-      </div>
-    `;
-    container.appendChild(card);
-    
-    // Prepare datasets
-    const datasets = [];
-    let commonLabels = [];
-    
-    parameters.forEach((param, pIdx) => {
-      const isStatus = param.includes('Status');
-      const mock = generateMockData(hours, dataPoints);
-      if(pIdx === 0) commonLabels = mock.labels; // use first set of labels
-      
-      let finalData = mock.data;
-      if (isStatus) {
-         // Force binary 0 or 1 for statuses
-         finalData = finalData.map(v => Math.random() > 0.1 ? 1 : 0); 
-      }
-      
-      datasets.push({
-        label: param,
-        data: finalData,
-        borderColor: chartColors[pIdx % chartColors.length],
-        backgroundColor: chartColors[pIdx % chartColors.length] + '20', // Add transparency
-        borderWidth: 2,
-        pointRadius: 0, // hide points for cleaner trend lines
-        tension: isStatus ? 0 : 0.3, // stepped lines for status, smooth for analog
-        stepped: isStatus ? true : false
-      });
+    // Group parameters by their type/unit
+    const groupedParams = {};
+    allParams.forEach(param => {
+      const info = getUnitInfo(param);
+      if(!groupedParams[info.unit]) groupedParams[info.unit] = { info: info, params: [] };
+      groupedParams[info.unit].params.push(param);
     });
 
-    // Render Chart
-    const ctx = document.getElementById(`chart-${sectionKey}-${index}`).getContext('2d');
-    const newChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: commonLabels,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { boxWidth: 10, padding: 15, font: { size: 11 } }
-          },
-          tooltip: {
-            backgroundColor: 'rgba(10,22,40,0.9)',
-            titleFont: { family: 'Rajdhani', size: 14 },
-            borderColor: 'rgba(255,190,0,0.3)',
-            borderWidth: 1
-          }
-        },
-        scales: {
-          y: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            beginAtZero: false
-          },
-          x: {
-            grid: { display: false }
-          }
-        }
-      }
-    });
+    // Create Tank Accordion HTML
+    const tankDiv = document.createElement('div');
+    tankDiv.className = 'l-tank-group';
     
-    chartInstances.push(newChart);
+    // Accordion Header
+    const headerHtml = `
+      <div class="l-tank-header" onclick="toggleTank(this)">
+        <div class="l-tank-title">${tankName}</div>
+        <svg class="l-tank-icon" viewBox="0 0 24 24" style="transform: rotate(180deg);"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="l-tank-content"></div>
+    `;
+    tankDiv.innerHTML = headerHtml;
+    const contentDiv = tankDiv.querySelector('.l-tank-content');
+
+    // Create Charts for each Grouped Unit inside the tank
+    Object.keys(groupedParams).forEach((unitKey) => {
+      const groupData = groupedParams[unitKey];
+      
+      const chartWrapper = document.createElement('div');
+      chartWrapper.className = 'l-chart-card';
+      chartWrapper.innerHTML = `
+        <div class="l-chart-title">${unitKey}</div>
+        <div class="l-chart-wrapper"><canvas id="chart-${chartIndex}"></canvas></div>
+      `;
+      contentDiv.appendChild(chartWrapper);
+
+      const datasets = [];
+      let commonLabels = [];
+
+      groupData.params.forEach((paramName, pIdx) => {
+        const mock = generateMockData(hours, dataPoints, groupData.info.min, groupData.info.max, groupData.info.step);
+        if(pIdx === 0) commonLabels = mock.labels;
+        
+        datasets.push({
+          label: paramName.replace(/\s*\(.*?\)\s*/g, ''), // Clean name for legend
+          data: mock.data,
+          borderColor: chartColors[pIdx % chartColors.length],
+          backgroundColor: chartColors[pIdx % chartColors.length] + '20',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: groupData.info.step ? 0 : 0.4,
+          stepped: groupData.info.step ? true : false,
+          fill: groupData.info.step ? true : false // Fill under status charts for visibility
+        });
+      });
+
+      // We use a timeout to ensure the canvas is in the DOM before rendering
+      const currentChartIndex = chartIndex;
+      setTimeout(() => {
+        const ctx = document.getElementById(`chart-${currentChartIndex}`).getContext('2d');
+        const newChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: commonLabels, datasets: datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11 } } },
+              tooltip: { backgroundColor: 'rgba(10,22,40,0.9)', titleFont: { family: 'Rajdhani', size: 14 }, borderColor: 'rgba(255,190,0,0.3)', borderWidth: 1 }
+            },
+            scales: {
+              y: { 
+                grid: { color: 'rgba(255,255,255,0.05)' }, 
+                beginAtZero: groupData.info.step,
+                max: groupData.info.step ? 1.2 : undefined,
+                ticks: { stepSize: groupData.info.step ? 1 : undefined }
+              },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+        chartInstances.push(newChart);
+      }, 0);
+
+      chartIndex++;
+    });
+
+    container.appendChild(tankDiv);
   });
 }
 
 function renderAllCharts() {
-  // Destroy old charts to prevent memory leaks and visual glitches
   chartInstances.forEach(chart => chart.destroy());
   chartInstances.length = 0;
-  
-  buildChartsForSection('cleaning', 'cleaningChartsGrid');
-  buildChartsForSection('coagulant', 'coagulantChartsGrid');
+  buildChartsForSection('cleaning', 'cleaningChartsContainer');
+  buildChartsForSection('coagulant', 'coagulantChartsContainer');
 }
 
-function updateChartsTimeframe() {
-  renderAllCharts(); // Re-draw with new time duration
-}
+function updateChartsTimeframe() { renderAllCharts(); }
 
-// --- INIT ---
 window.onload = () => {
   initSelectors();
   fetchProduct();
   renderAllCharts();
 };
-
 </script>
 </body>
 </html>

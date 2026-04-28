@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - Main Dashboards</title>
+<link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .r-page {
+    font-family: 'Inter', sans-serif;
+    background: #0a1628;
+    min-height: 100vh;
+    color: #e8eaf0;
+    position: relative;
+    overflow-x: hidden;
+	zoom:80%;
+  }
+
+  .r-gridbg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.65) 100%),
+      url('../Foresight_Background.jpg'); 
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .r-glow {
+    position: absolute;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .r-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid rgba(34,197,94,0.15);
+    background: rgba(10,22,40,0.9);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .r-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255,190,0,0.7);
+    cursor: pointer;
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+
+  .r-back:hover {
+    color: #FFBE00;
+    border-color: rgba(255,190,0,0.5);
+    background: rgba(255,190,0,0.06);
+  }
+
+  .r-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .r-htitle {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e8eaf0;
+    letter-spacing: 1px;
+  }
+  .r-htitle span { color: #22c55e; } /* Green accent for Main */
+
+  .r-hright { font-size: 12px; color: rgba(200,210,230,0.6); }
+
+  /* Main Content Layout */
+  .r-main {
+    position: relative;
+    z-index: 10;
+    padding: 40px 32px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .r-hero {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .r-hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #22c55e;
+    border: 1px solid rgba(34,197,94,0.3);
+    padding: 4px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    background: rgba(34,197,94,0.05);
+  }
+
+  .r-hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .r-hero p {
+    font-size: 14px;
+    color: rgba(200,210,230,0.5);
+    margin-top: 12px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* 3x2 Grid for Dashboards */
+  .r-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .r-module-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,190,0,0.15);
+    border-radius: 12px;
+    padding: 28px 24px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .r-module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: transparent;
+    transition: background 0.25s;
+  }
+
+  .r-module-card:hover {
+    background: rgba(255,190,0,0.05);
+    border-color: rgba(255,190,0,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .r-module-card:hover::before { background: #FFBE00; }
+
+  /* Specific color override for the Alarm dashboard to make it red */
+  .r-module-card.alarm:hover {
+    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+  .r-module-card.alarm:hover::before { background: #ef4444; }
+  .r-module-card.alarm:hover .r-icon { border-color: rgba(239, 68, 68, 0.5); stroke: #ef4444; }
+
+  /* Specific color override for OEE / Process to make it Green */
+  .r-module-card.success:hover {
+    background: rgba(34, 197, 94, 0.05);
+    border-color: rgba(34, 197, 94, 0.4);
+  }
+  .r-module-card.success:hover::before { background: #22c55e; }
+  .r-module-card.success:hover .r-icon { border-color: rgba(34, 197, 94, 0.5); stroke: #22c55e; }
+
+  .r-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,190,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+  }
+
+  .r-icon svg { width: 24px; height: 24px; stroke: #FFBE00; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s;}
+
+  .r-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #e8eaf0;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .r-desc {
+    font-size: 13px;
+    color: rgba(200,210,230,0.45);
+    line-height: 1.5;
+  }
+
+  .r-arrow {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,190,0,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.25s;
+  }
+
+  .r-module-card:hover .r-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: #FFBE00;
+  }
+
+  .r-module-card.alarm:hover .r-arrow { color: #ef4444; }
+  .r-module-card.success:hover .r-arrow { color: #22c55e; }
+
+  .r-arrow svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+</style>
+</head>
+<body>
+
+<div class="r-page">
+  <div class="r-gridbg"></div>
+  <div class="r-glow"></div>
+
+  <header class="r-header">
+    <a href="../hartalega_production_landing.html" class="r-back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Plant Overview
+    </a>
+    
+    <div class="r-htitle" id="headerPlantTitle">
+      PLANT MAIN <span>· MODULES</span>
+    </div>
+    
+    <div class="r-hright">
+      Proprietary System
+    </div>
+  </header>
+
+  <main class="r-main">
+    
+    <div class="r-hero">
+      <div class="r-hero-tag">Advanced Analytics Portal</div>
+      <h1 id="heroTitle">Select Main Dashboard</h1>
+      <p>Choose an insight module below to access specialized telemetry, systemic health overviews, and predictive operational metrics for this plant.</p>
+    </div>
+
+    <div class="r-modules-grid">
+
+      <a href="#" class="r-module-card">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="r-title">Production Health Dashboard</div>
+        <div class="r-desc">High-level systemic overview of critical line metrics, live production rates, and facility status.</div>
+        <div class="r-arrow">Access Module <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+      <a href="#" class="r-module-card alarm">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="r-title">Alarm Dashboard</div>
+        <div class="r-desc">Real-time alerts, parameter deviations, and historical anomaly tracking across all zones.</div>
+        <div class="r-arrow">Access Module <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+      <a href="#" class="r-module-card">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <div class="r-title">Line Support Dashboard</div>
+        <div class="r-desc">Maintenance requests, technician dispatch logs, and equipment downtime diagnostics.</div>
+        <div class="r-arrow">Access Module <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+      <a href="#" class="r-module-card">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="r-title">Glove Handling Dashboard</div>
+        <div class="r-desc">Post-stripping tracking, AGV routing status, tumbling telemetry, and packing flow.</div>
+        <div class="r-arrow">Access Module <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+      <a href="#" class="r-module-card success">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="r-title">Process Insight Dashboard</div>
+        <div class="r-desc">Deep-dive into chemical compounding, oven temperatures, and dipping tank parameters.</div>
+        <div class="r-arrow">Access Module <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+      <a href="#" class="r-module-card success">
+        <div class="r-icon">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="r-title">OEE Insight Dashboard</div>
+        <div class="r-desc">Overall Equipment Effectiveness breakdown: Availability, Performance, and Quality yield.</div>
+        <div class="r-arrow">Access Module <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  // Small utility script to dynamically update the title based on the filename
+  // Example: if filename is "hartalega_production_plant4_revamp_landing.html", it will extract "4"
+  document.addEventListener('DOMContentLoaded', () => {
+    const filename = window.location.pathname.split('/').pop();
+    const match = filename.match(/plant(\d+)/);
+    
+    if (match && match[1]) {
+      const plantNum = match[1];
+      document.getElementById('headerPlantTitle').innerHTML = `PLANT ${plantNum} <span>· MAIN</span>`;
+      document.getElementById('heroTitle').innerText = `Plant ${plantNum} Main Dashboards`;
+    }
+  });
+</script>
+
+</body>
+</html>

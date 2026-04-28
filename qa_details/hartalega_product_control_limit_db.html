@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hartalega — Product Control Limit Database</title>
+<link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d1b2a;
+  --surface:#132033;
+  --surface2:#1a2b40;
+  --border:rgba(255,190,0,0.15);
+  --border2:rgba(255,190,0,0.3);
+  --gold:#FFBE00;
+  --gold2:rgba(255,190,0,0.7);
+  --text:#e8edf5;
+  --muted:rgba(200,215,235,0.5);
+  --danger:#e05c5c;
+  --success:#3dba7e;
+  --info:#4fa3e0;
+}
+
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;zoom:80%;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,190,0,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,190,0,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* HEADER */
+.hdr{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:rgba(13,27,42,0.95);border-bottom:1px solid var(--border);gap:16px;flex-wrap:wrap;}
+.hdr-left{display:flex;align-items:center;gap:12px;}
+.hdr-logo{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--gold);letter-spacing:1px;text-decoration:none;cursor:pointer;}
+.hdr-logo:hover{color:#ffd040;}
+.hdr-sep{width:1px;height:28px;background:var(--border2);}
+.hdr-title{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:0.5px;}
+.hdr-right{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* TOOLBAR — two rows */
+.toolbar{position:relative;z-index:10;background:var(--surface);border-bottom:1px solid var(--border);}
+.toolbar-row{display:flex;align-items:center;gap:10px;padding:10px 28px;flex-wrap:wrap;}
+.toolbar-row+.toolbar-row{border-top:1px solid var(--border);padding-top:10px;padding-bottom:10px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid;transition:all .18s;text-decoration:none;}
+.btn-gold{background:var(--gold);color:#0d1b2a;border-color:var(--gold);}
+.btn-gold:hover{background:#ffd040;}
+.btn-outline{background:transparent;color:var(--gold);border-color:var(--border2);}
+.btn-outline:hover{background:rgba(255,190,0,0.08);border-color:var(--gold);}
+.btn-danger{background:transparent;color:var(--danger);border-color:rgba(224,92,92,0.3);}
+.btn-danger:hover{background:rgba(224,92,92,0.08);}
+.btn-green{background:transparent;color:var(--success);border-color:rgba(61,186,126,0.3);}
+.btn-green:hover{background:rgba(61,186,126,0.08);border-color:var(--success);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+
+/* SELECT */
+.select-wrap{position:relative;}
+.select-wrap select{appearance:none;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 36px 7px 12px;border-radius:6px;cursor:pointer;min-width:300px;outline:none;}
+.select-wrap select:focus{border-color:var(--gold);}
+.select-wrap::after{content:'▾';position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--gold2);pointer-events:none;font-size:12px;}
+
+/* MAIN */
+.main{position:relative;z-index:1;padding:24px 28px;max-width:1400px;}
+.sec-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--text);letter-spacing:.5px;margin-bottom:16px;}
+.sec-title span{color:var(--gold);}
+
+/* VERSION TABLE */
+.vtable-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin-bottom:28px;}
+table.vtable{width:100%;border-collapse:collapse;min-width:900px;}
+table.vtable thead th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--border);}
+table.vtable tbody tr{border-bottom:1px solid var(--border);}
+table.vtable tbody tr:last-child{border-bottom:none;}
+table.vtable tbody tr:hover{background:rgba(255,190,0,0.03);}
+table.vtable tbody td{padding:10px 14px;font-size:13px;color:var(--text);vertical-align:middle;}
+.td-muted{color:var(--muted);}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500;letter-spacing:.3px;}
+.badge-gold{background:rgba(255,190,0,0.12);color:var(--gold);border:1px solid rgba(255,190,0,0.25);}
+.badge-info{background:rgba(79,163,224,0.12);color:var(--info);border:1px solid rgba(79,163,224,0.25);}
+.td-actions{display:flex;gap:6px;align-items:center;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty svg{width:36px;height:36px;stroke:rgba(255,190,0,0.2);fill:none;stroke-width:1.5;display:block;margin:0 auto 10px;}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(5,12,22,0.82);z-index:100;overflow-y:auto;padding:24px 16px;}
+.overlay.open{display:block;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;max-width:1020px;margin:0 auto;overflow:hidden;}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--text);letter-spacing:.5px;}
+.modal-title span{color:var(--gold);}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;}
+.modal-close:hover{color:var(--danger);}
+.modal-body{padding:24px;}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:18px 24px;border-top:1px solid var(--border);background:var(--surface2);}
+
+/* FORM */
+.form-section{margin-bottom:28px;}
+.form-section-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.form-field{display:flex;flex-direction:column;gap:5px;}
+.form-field label{font-size:12px;color:var(--muted);letter-spacing:.3px;}
+.form-field input,.form-field select,.form-field textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;border-radius:6px;outline:none;transition:border .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--gold);}
+.form-field textarea{resize:vertical;min-height:60px;}
+.form-field select option{background:var(--surface2);}
+.plant-line-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.chip{padding:4px 10px;border-radius:16px;font-size:12px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;transition:all .15s;}
+.chip.sel{background:rgba(255,190,0,0.15);border-color:var(--gold);color:var(--gold);}
+.chip:hover:not(.sel){border-color:var(--gold2);color:var(--gold2);}
+.add-prod-modal{background:var(--surface);border:1px solid var(--border2);border-radius:12px;max-width:480px;margin:80px auto 0;overflow:hidden;}
+
+/* PROCESS TABLE inside modal */
+.ptable-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;}
+.ptable{width:100%;border-collapse:collapse;min-width:640px;}
+.ptable thead th{background:var(--surface2);padding:9px 10px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+.ptable tbody tr{border-bottom:1px solid rgba(255,190,0,0.07);}
+.ptable tbody tr:hover{background:rgba(255,190,0,0.02);}
+.ptable tbody td{padding:5px 8px;font-size:13px;vertical-align:middle;}
+.ptable .td-proc{color:var(--gold2);font-weight:500;white-space:nowrap;}
+.ptable .td-unit{color:var(--muted);}
+.ptable input[type=number],.ptable input[type=text]{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:5px 8px;border-radius:5px;outline:none;width:100%;}
+.ptable input:focus{border-color:var(--gold);}
+.ptable .td-na{color:rgba(200,215,235,0.2);font-size:12px;text-align:center;}
+.ptable .col-drag{width:28px;text-align:center;cursor:grab;color:var(--muted);font-size:16px;user-select:none;}
+.ptable .col-drag:active{cursor:grabbing;}
+.ptable .col-proc{width:170px;}
+.ptable .col-unit{min-width:140px;}
+.ptable .col-val{width:100px;}
+.ptable .col-act{width:36px;}
+
+/* Drag-over highlight */
+tr.drag-over td{background:rgba(255,190,0,0.08)!important;}
+tr.dragging{opacity:0.4;}
+
+/* Section header rows in process table */
+.ptable tr.sec-row td{background:rgba(255,190,0,0.05);padding:6px 10px;}
+.ptable tr.sec-row .sec-label{font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:.8px;color:var(--gold);text-transform:uppercase;}
+
+/* View modal */
+.view-ptable{width:100%;border-collapse:collapse;}
+.view-ptable th{background:var(--surface2);padding:8px 12px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--border);}
+.view-ptable td{padding:7px 12px;font-size:13px;border-bottom:1px solid rgba(255,190,0,0.06);}
+.view-ptable .vp{color:var(--gold2);font-weight:500;}
+.view-ptable .vu{color:var(--muted);}
+.val-na{color:rgba(200,215,235,0.2);font-size:12px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--surface2);border:1px solid var(--success);color:var(--success);padding:10px 18px;border-radius:8px;font-size:13px;display:none;}
+
+@media(max-width:640px){
+  .hdr{padding:12px 16px;}
+  .main{padding:16px;}
+  .toolbar-row{padding:10px 16px;}
+  .plant-line-wrap{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-left">
+    <a href="../hartalega_foresight_landing_page.html" class="hdr-logo" title="Back to Foresight Main Portal">HARTALEGA</a>
+    <div class="hdr-sep"></div>
+    <span class="hdr-title">Product Control Limit Database</span>
+  </div>
+  <div class="hdr-right">
+    <span class="dot"></span> Foresight IoT Platform &nbsp;·&nbsp; QA / Production
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-row">
+    <a href="../hartalega_qa_landing.html" class="btn btn-outline" style="text-decoration:none;">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      QA Overview
+    </a>
+  </div>
+
+  <div class="toolbar-row">
+    <div class="select-wrap">
+      <select id="productSelect" onchange="onProductChange()">
+        <option value="">— Select a product —</option>
+      </select>
+    </div>
+    <button class="btn btn-outline" onclick="openAddProduct()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Product
+    </button>
+    <button class="btn btn-gold" id="addVersionBtn" style="display:none" onclick="openNewVersion()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add New Version
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div id="noProductMsg" style="text-align:center;padding:60px 20px;color:var(--muted);">
+    <svg style="width:48px;height:48px;stroke:rgba(255,190,0,0.15);fill:none;stroke-width:1.2;display:block;margin:0 auto 14px;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:18px;color:rgba(255,190,0,0.3);letter-spacing:1px;">SELECT OR ADD A PRODUCT TO BEGIN</div>
+  </div>
+
+  <div id="versionPanel" style="display:none;">
+    <div class="sec-title">Version History — <span id="panelProductName"></span></div>
+    <div class="vtable-wrap">
+      <table class="vtable">
+        <thead>
+          <tr>
+            <th>Document No.</th>
+            <th>Product Name</th>
+            <th>Effective Date</th>
+            <th>Revision No.</th>
+            <th>Plant No.</th>
+            <th>Lines</th>
+            <th>Last Edited</th>
+            <th>Remarks</th>
+            <th style="width:100px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="versionTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="addProductOverlay">
+  <div class="add-prod-modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Add <span>New Product</span></span>
+      <button class="modal-close" onclick="closeAddProduct()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field" style="margin-bottom:14px;">
+        <label>Product Name *</label>
+        <input type="text" id="newProductName" placeholder="e.g. NB-AB-OLPF-030-SE-DKBU-EN6N"/>
+      </div>
+      <div class="form-field">
+        <label>Description (optional)</label>
+        <input type="text" id="newProductDesc" placeholder="Brief product description"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAddProduct()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveNewProduct()">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="versionOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title"><span>New Version</span> — Control Limit Entry</span>
+      <button class="modal-close" onclick="closeNewVersion()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-section">
+        <div class="form-section-title">Version Information</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Document No.</label>
+            <input type="text" id="v_docno" placeholder="e.g. FN P 15.0X"/>
+          </div>
+          <div class="form-field">
+            <label>Effective Date *</label>
+            <input type="date" id="v_date"/>
+          </div>
+          <div class="form-field">
+            <label>Revision No. *</label>
+            <input type="number" id="v_revno" placeholder="e.g. 1" min="0"/>
+          </div>
+          <div class="form-field" style="grid-column:1/-1;">
+            <label>Remarks / Changes</label>
+            <textarea id="v_remarks" placeholder="Describe what changed in this version..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Applicable Plant &amp; Lines</div>
+        <div class="plant-line-wrap">
+          <div>
+            <div class="form-field" style="margin-bottom:8px;"><label>Select Plant(s)</label></div>
+            <div class="chip-group" id="plantChips"></div>
+          </div>
+          <div>
+            <div class="form-field" style="margin-bottom:8px;"><label>Select Line(s) <span id="lineLabel" style="color:var(--muted);">(choose plant first)</span></label></div>
+            <div class="chip-group" id="lineChips"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div class="form-section-title" style="margin-bottom:0;border-bottom:none;">Process Control Limits</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-green btn-sm" onclick="addSectionRow()">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Section
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="resetParamRows()" title="Reset to default parameters">
+              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+              Reset to Default
+            </button>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+          Drag <span style="color:var(--gold);">⠿</span> to reorder rows. Click
+          <span style="color:var(--success);">+</span> to add a parameter row below.
+          Click <span style="color:var(--danger);">✕</span> to delete a row. Leave Min/Max blank if not applicable.
+        </p>
+        <div class="ptable-wrap">
+          <table class="ptable">
+            <thead>
+              <tr>
+                <th class="col-drag" title="Drag to reorder"></th>
+                <th class="col-proc">Process</th>
+                <th class="col-unit">Parameter / Unit</th>
+                <th class="col-val">Min</th>
+                <th class="col-val">Max</th>
+                <th class="col-act" title="Add parameter row below">
+                  <svg style="width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </th>
+                <th class="col-act" title="Delete row">
+                  <svg style="width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="processTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeNewVersion()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveVersion()">Save Version</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="viewOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">View <span>Control Limits</span></span>
+      <button class="modal-close" onclick="document.getElementById('viewOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="viewModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('viewOverlay').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DEFAULT PROCESS PARAMETER DEFINITIONS
+// To amend permanently: add/remove/reorder entries here.
+// unit: '' means a section-divider row (no min/max inputs).
+// ============================================================
+const DEFAULT_PARAMS = [
+  {process:"Line Speed",unit:"pcs/hr"},
+  {process:"Acid Cleaning Tank 1",unit:"%"},
+  {process:"Acid Cleaning Tank 1",unit:"pH"},
+  {process:"Acid Cleaning Tank 1",unit:"Temperature"},
+  {process:"Acid Cleaning Tank 1",unit:"Dosing (Ltr/hr)"},
+  {process:"Acid Cleaning Tank 1",unit:"CAA (Ltr/hr)"},
+  {process:"Acid Cleaning Tank 2",unit:"%"},
+  {process:"Acid Cleaning Tank 2",unit:"pH"},
+  {process:"Acid Cleaning Tank 2",unit:"Temperature"},
+  {process:"Acid Cleaning Tank 2",unit:"Dosing (Ltr/hr)"},
+  {process:"Acid Cleaning Tank 2",unit:"CAA (Ltr/hr)"},
+  {process:"Acid Shower",unit:""},
+  {process:"Acid Bath",unit:"Temperature"},
+  {process:"Alkaline Cleaning Tank 1",unit:"EFC-12%"},
+  {process:"Alkaline Cleaning Tank 1",unit:"EMC Coupon %"},
+  {process:"Alkaline Cleaning Tank 1",unit:"Kleen B 156 %"},
+  {process:"Alkaline Cleaning Tank 1",unit:"pH"},
+  {process:"Alkaline Cleaning Tank 1",unit:"Temperature"},
+  {process:"Alkaline Cleaning Tank 1",unit:"Dosing (Ltr/hr)"},
+  {process:"Alkaline Cleaning Tank 1",unit:"CAA (Ltr/hr)"},
+  {process:"Alkaline Cleaning Tank 2",unit:"EFC-12%"},
+  {process:"Alkaline Cleaning Tank 2",unit:"EMC Coupon %"},
+  {process:"Alkaline Cleaning Tank 2",unit:"Kleen B 156 %"},
+  {process:"Alkaline Cleaning Tank 2",unit:"pH"},
+  {process:"Alkaline Cleaning Tank 2",unit:"Temperature"},
+  {process:"Alkaline Cleaning Tank 2",unit:"Dosing (Ltr/hr)"},
+  {process:"Alkaline Cleaning Tank 2",unit:"CAA (Ltr/hr)"},
+  {process:"Hot Bath",unit:"Temperature"},
+  {process:"Cleaning Brush Water Spray & Rotation",unit:""},
+  {process:"Hot Rinse",unit:"Temperature (Hot)"},
+  {process:"Hot Rinse",unit:"pH"},
+  {process:"Hot Water Pump to Acid Shower",unit:""},
+  {process:"Hot Water Tank",unit:"Temperature"},
+  {process:"Hot Water Tank",unit:"pH"},
+  {process:"Blower",unit:""},
+  {process:"Coagulant",unit:"CN Strength %"},
+  {process:"Coagulant",unit:"Former Release Agent %"},
+  {process:"Coagulant",unit:"CaCO3 %"},
+  {process:"Coagulant",unit:"Stirrer Speed Hz"},
+  {process:"Coagulant",unit:"Pump Speed Hz"},
+  {process:"Coagulant",unit:"pH"},
+  {process:"Coagulant",unit:"Temperature"},
+  {process:"Coagulant",unit:"W-Agent Dosing (ml/hr)"},
+  {process:"Coagulant",unit:"Ammonia Dosing (ml/hr)"},
+  {process:"Coagulant",unit:"Mix Tank No."},
+  {process:"Oven B",unit:"Temperature"},
+  {process:"Former Temp. After Oven B",unit:"LHS Top"},
+  {process:"Former Temp. After Oven B",unit:"RHS Top"},
+  {process:"Former Temp. After Oven B",unit:"LHS Bottom"},
+  {process:"Former Temp. After Oven B",unit:"RHS Bottom"},
+  {process:"Latex Dip",unit:"TSC %"},
+  {process:"Latex Dip",unit:"Stirrer speed (Hz)"},
+  {process:"Latex Dip",unit:"pH"},
+  {process:"Latex Dip",unit:"Temperature"},
+  {process:"Latex Dip",unit:"Mix Tank No."},
+  {process:"Latex Dip",unit:"Latex level (mm)"},
+  {process:"C1 Oven",unit:"Temperature"},
+  {process:"C2 Oven",unit:"Temperature"},
+  {process:"Pre Leach 1",unit:"Temperature"},
+  {process:"Pre Leach 2",unit:"Temperature"},
+  {process:"Pre Leach 3",unit:"Temperature"},
+  {process:"Pre Leach 4",unit:"Temperature"},
+  {process:"Pre Leach 5",unit:"Temperature"},
+  {process:"Pre Leach 6",unit:"Temperature"},
+  {process:"CCP 1",unit:"Rotameter"},
+  {process:"CCP 1",unit:"flow rate"},
+  {process:"Blower",unit:""},
+  {process:"Polymer",unit:"TSC %"},
+  {process:"Polymer",unit:"Temperature"},
+  {process:"Lower Main Oven",unit:"Temperature"},
+  {process:"Main Oven (Temp)",unit:"Zone 1"},
+  {process:"Main Oven (Temp)",unit:"Zone 2"},
+  {process:"Main Oven (Temp)",unit:"Zone 3"},
+  {process:"Main Oven (Temp)",unit:"Zone 4"},
+  {process:"Main Oven (Temp)",unit:"Zone 5"},
+  {process:"Main Oven (Temp)",unit:"Average"},
+  {process:"After Main Oven",unit:"Glove Temperature"},
+  {process:"After Main Oven",unit:"Former Temperature"},
+  {process:"Cooling 1",unit:"Temperature"},
+  {process:"Cooling 2",unit:"Temperature"},
+  {process:"Cooling 3",unit:"Temperature"},
+  {process:"Chlorine",unit:"ppm"},
+  {process:"Chlorine",unit:"Temperature"},
+  {process:"Soak",unit:"Water from M/O Scrubber Front"},
+  {process:"Soak",unit:"pH"},
+  {process:"Neutralizer",unit:"pH"},
+  {process:"CCP 2",unit:"Rinse 3 Temperature"},
+  {process:"CCP 2",unit:"Rinse 3 pH"},
+  {process:"CCP 2",unit:"Rinse 4 Temperature"},
+  {process:"CCP 2",unit:"Rinse 4 pH"},
+  {process:"Blower",unit:""},
+  {process:"Coating Tank",unit:"TSC %"},
+  {process:"Coating Tank",unit:"Temperature"},
+  {process:"Coating Tank",unit:"Tank No."},
+  {process:"Coating Tank",unit:"Tank Level (cm)"},
+  {process:"CCP 3",unit:"D Oven"},
+  {process:"After D Oven",unit:"Glove Temperature"},
+  {process:"After D Oven",unit:"Former Temperature"},
+];
+
+// ============================================================
+// PLANT DATA
+// ============================================================
+function range(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
+const PLANTS=[
+  {id:"P1",lines:range(1,12)},
+  {id:"P2",lines:range(13,24)},
+  {id:"P3",lines:range(25,36)},
+  {id:"P4",lines:range(37,48)},
+  {id:"P5",lines:range(49,60)},
+  {id:"P6",lines:range(61,72)},
+  {id:"P7",lines:range(73,82)},
+  {id:"P8",lines:[...range(83,92),105]},
+  {id:"P9",lines:range(93,104)},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+function loadDB(){return JSON.parse(localStorage.getItem('hrt_cldb')||'{"products":[],"versions":{}}');}
+function saveDB(d){localStorage.setItem('hrt_cldb',JSON.stringify(d));}
+
+let db=loadDB();
+let currentProduct=null;
+let selPlants=[];
+let selLines=[];
+// Live param rows for current edit session
+let liveParams=[];
+let dragSrcIdx=null;
+
+// ============================================================
+// INIT
+// ============================================================
+function init(){
+  renderProductDropdown();
+  renderPlantChips();
+  document.getElementById('v_date').value=new Date().toISOString().split('T')[0];
+}
+
+// ============================================================
+// PRODUCT DROPDOWN
+// ============================================================
+function renderProductDropdown(){
+  const sel=document.getElementById('productSelect');
+  const val=sel.value;
+  sel.innerHTML='<option value="">— Select a product —</option>';
+  db.products.forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.id;o.textContent=p.name;
+    if(p.id===val)o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+function onProductChange(){
+  const sel=document.getElementById('productSelect');
+  currentProduct=sel.value||null;
+  document.getElementById('addVersionBtn').style.display=currentProduct?'inline-flex':'none';
+  document.getElementById('noProductMsg').style.display=currentProduct?'none':'block';
+  document.getElementById('versionPanel').style.display=currentProduct?'block':'none';
+  if(currentProduct){
+    const p=db.products.find(x=>x.id===currentProduct);
+    document.getElementById('panelProductName').textContent=p?p.name:'';
+    renderVersionTable();
+  }
+}
+
+// ============================================================
+// ADD PRODUCT
+// ============================================================
+function openAddProduct(){document.getElementById('addProductOverlay').classList.add('open');}
+function closeAddProduct(){
+  document.getElementById('addProductOverlay').classList.remove('open');
+  document.getElementById('newProductName').value='';
+  document.getElementById('newProductDesc').value='';
+}
+function saveNewProduct(){
+  const name=document.getElementById('newProductName').value.trim();
+  if(!name){alert('Please enter a product name.');return;}
+  const id='prod_'+Date.now();
+  db.products.push({id,name,desc:document.getElementById('newProductDesc').value.trim()});
+  db.versions[id]=[];
+  saveDB(db);
+  renderProductDropdown();
+  document.getElementById('productSelect').value=id;
+  onProductChange();
+  closeAddProduct();
+  showToast('Product added: '+name);
+}
+
+// ============================================================
+// VERSION TABLE
+// ============================================================
+function renderVersionTable(){
+  const tbody=document.getElementById('versionTableBody');
+  const versions=db.versions[currentProduct]||[];
+  if(!versions.length){
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>No versions yet. Click "Add New Version" to begin.</div></td></tr>`;
+    return;
+  }
+  const pName=db.products.find(p=>p.id===currentProduct)?.name||'';
+  tbody.innerHTML=versions.map((v,i)=>`
+    <tr>
+      <td class="td-muted">${v.docno||'—'}</td>
+      <td><span class="badge badge-gold">${pName}</span></td>
+      <td>${v.date||'—'}</td>
+      <td><span class="badge badge-info">Rev ${v.revno}</span></td>
+      <td>${v.plants.join(', ')||'—'}</td>
+      <td style="font-size:12px;color:var(--muted);">${formatLines(v.lines)}</td>
+      <td class="td-muted">${v.editor||'—'}</td>
+      <td style="max-width:200px;font-size:12px;color:var(--muted);">${v.remarks||'—'}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-outline btn-sm" onclick="viewVersion(${i})" title="View">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteVersion(${i})" title="Delete">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function formatLines(lines){
+  if(!lines||!lines.length)return '—';
+  if(lines.length>6)return lines.slice(0,6).map(l=>'L'+l).join(', ')+' +'+(lines.length-6)+' more';
+  return lines.map(l=>'L'+l).join(', ');
+}
+
+// ============================================================
+// NEW VERSION MODAL
+// ============================================================
+function openNewVersion(){
+  selPlants=[];selLines=[];
+  renderPlantChips();
+  document.getElementById('lineChips').innerHTML='<span style="font-size:12px;color:var(--muted);">Select plant(s) first</span>';
+  document.getElementById('v_docno').value='';
+  document.getElementById('v_revno').value='';
+  document.getElementById('v_remarks').value='';
+  document.getElementById('v_date').value=new Date().toISOString().split('T')[0];
+  
+  // Init live params from defaults with explicit isSection flag
+  liveParams=DEFAULT_PARAMS.map(r=>({
+    process: r.process,
+    unit: r.unit,
+    min: '',
+    max: '',
+    isSection: r.unit === ''
+  }));
+  
+  renderParamTable();
+  document.getElementById('versionOverlay').classList.add('open');
+}
+function closeNewVersion(){document.getElementById('versionOverlay').classList.remove('open');}
+
+// ============================================================
+// PLANT / LINE CHIPS
+// ============================================================
+function renderPlantChips(){
+  const wrap=document.getElementById('plantChips');
+  wrap.innerHTML='';
+  PLANTS.forEach(p=>{
+    const c=document.createElement('div');
+    c.className='chip'+(selPlants.includes(p.id)?' sel':'');
+    c.textContent=p.id;
+    c.onclick=()=>togglePlant(p.id);
+    wrap.appendChild(c);
+  });
+  const all=document.createElement('div');
+  all.className='chip';all.textContent='All';
+  all.onclick=()=>{
+    selPlants=selPlants.length===PLANTS.length?[]:PLANTS.map(x=>x.id);
+    renderPlantChips();renderLineChips();
+  };
+  wrap.appendChild(all);
+}
+function togglePlant(id){
+  if(selPlants.includes(id))selPlants=selPlants.filter(x=>x!==id);
+  else selPlants.push(id);
+  const plant=PLANTS.find(p=>p.id===id);
+  if(plant)selLines=selLines.filter(l=>!plant.lines.includes(l));
+  renderPlantChips();renderLineChips();
+}
+function renderLineChips(){
+  const wrap=document.getElementById('lineChips');
+  wrap.innerHTML='';
+  if(!selPlants.length){wrap.innerHTML='<span style="font-size:12px;color:var(--muted);">Select plant(s) first</span>';return;}
+  const avail=[];
+  selPlants.forEach(pid=>{
+    const pl=PLANTS.find(p=>p.id===pid);
+    if(pl)pl.lines.forEach(l=>{if(!avail.includes(l))avail.push(l);});
+  });
+  avail.sort((a,b)=>a-b);
+  const allC=document.createElement('div');
+  allC.className='chip'+(selLines.length===avail.length&&avail.length?' sel':'');
+  allC.textContent='All Lines';
+  allC.onclick=()=>{selLines=selLines.length===avail.length?[]:[...avail];renderLineChips();};
+  wrap.appendChild(allC);
+  avail.forEach(l=>{
+    const c=document.createElement('div');
+    c.className='chip'+(selLines.includes(l)?' sel':'');
+    c.textContent='L'+l+(l===105?' (RND)':'');
+    c.onclick=()=>{
+      selLines=selLines.includes(l)?selLines.filter(x=>x!==l):[...selLines,l];
+      renderLineChips();
+    };
+    wrap.appendChild(c);
+  });
+}
+
+// ============================================================
+// PARAM TABLE — render, add, delete, drag-reorder
+// ============================================================
+function renderParamTable(){
+  const tbody=document.getElementById('processTableBody');
+  tbody.innerHTML='';
+  liveParams.forEach((row,i)=>{
+    const tr=document.createElement('tr');
+    tr.dataset.idx=i;
+    tr.draggable=true;
+
+    // Explicitly check isSection flag
+    if(row.isSection){
+      // Section divider row
+      tr.classList.add('sec-row');
+      tr.innerHTML=`
+        <td class="col-drag" draggable="false">⠿</td>
+        <td colspan="3"><input type="text" value="${row.process}" oninput="liveParams[${i}].process=this.value" placeholder="Section label" style="background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;color:var(--gold);font-weight:500;width:100%;"/></td>
+        <td></td>
+        <td>
+          <button class="btn btn-green btn-sm" style="padding:3px 6px;" onclick="addRowBelow(${i})" title="Add parameter row below">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </td>
+        <td>
+          <button class="btn btn-danger btn-sm" style="padding:3px 6px;" onclick="deleteRow(${i})" title="Delete row">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </td>`;
+    } else {
+      // Normal Parameter Row
+      tr.innerHTML=`
+        <td class="col-drag">⠿</td>
+        <td class="col-proc"><input type="text" value="${escHtml(row.process)}" oninput="liveParams[${i}].process=this.value" placeholder="Process name"/></td>
+        <td class="col-unit"><input type="text" value="${escHtml(row.unit)}" oninput="liveParams[${i}].unit=this.value" placeholder="Unit / parameter"/></td>
+        <td class="col-val"><input type="number" value="${row.min}" oninput="liveParams[${i}].min=this.value" step="any" placeholder="Min"/></td>
+        <td class="col-val"><input type="number" value="${row.max}" oninput="liveParams[${i}].max=this.value" step="any" placeholder="Max"/></td>
+        <td>
+          <button class="btn btn-green btn-sm" style="padding:3px 6px;" onclick="addRowBelow(${i})" title="Add parameter row below">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </td>
+        <td>
+          <button class="btn btn-danger btn-sm" style="padding:3px 6px;" onclick="deleteRow(${i})" title="Delete row">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </td>`;
+    }
+
+    // Drag events
+    tr.addEventListener('dragstart',e=>{
+      dragSrcIdx=i;
+      tr.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    tr.addEventListener('dragend',()=>{
+      tr.classList.remove('dragging');
+      document.querySelectorAll('#processTableBody tr').forEach(r=>r.classList.remove('drag-over'));
+    });
+    tr.addEventListener('dragover',e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      document.querySelectorAll('#processTableBody tr').forEach(r=>r.classList.remove('drag-over'));
+      tr.classList.add('drag-over');
+    });
+    tr.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(dragSrcIdx===null||dragSrcIdx===i)return;
+      const moved=liveParams.splice(dragSrcIdx,1)[0];
+      const targetIdx=dragSrcIdx<i?i:i;
+      liveParams.splice(dragSrcIdx<i?i:i,0,moved);
+      dragSrcIdx=null;
+      renderParamTable();
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Function to add a SECTION divider row at the bottom
+function addSectionRow(){
+  liveParams.push({process:'', unit:'', min:'', max:'', isSection: true});
+  renderParamTable();
+  const wrap=document.querySelector('.ptable-wrap');
+  wrap.scrollTop=wrap.scrollHeight;
+}
+
+// Function to add a PARAMETER row directly below a specific index
+function addRowBelow(idx){
+  liveParams.splice(idx+1, 0, {
+    process: liveParams[idx].process || '', 
+    unit: '', 
+    min: '', 
+    max: '', 
+    isSection: false // Forces it to be a parameter row
+  });
+  renderParamTable();
+}
+
+function deleteRow(idx){
+  if(liveParams.length<=1){showToast('Cannot delete the last row.');return;}
+  liveParams.splice(idx,1);
+  renderParamTable();
+}
+
+function resetParamRows(){
+  if(!confirm('Reset all parameters to the default list? Any unsaved changes will be lost.'))return;
+  liveParams=DEFAULT_PARAMS.map(r=>({
+    process: r.process,
+    unit: r.unit,
+    min: '',
+    max: '',
+    isSection: r.unit === ''
+  }));
+  renderParamTable();
+  showToast('Parameters reset to default.');
+}
+
+// ============================================================
+// SAVE VERSION
+// ============================================================
+function saveVersion(){
+  const date=document.getElementById('v_date').value;
+  const revno=document.getElementById('v_revno').value;
+  if(!date||revno===''){alert('Please fill in Effective Date and Revision No.');return;}
+  if(!selPlants.length){alert('Please select at least one plant.');return;}
+  if(!selLines.length){alert('Please select at least one line.');return;}
+
+  // Snapshot current liveParams including their isSection flags
+  const paramSnapshot=liveParams.map(r=>({
+    process: r.process,
+    unit: r.unit,
+    min: r.min,
+    max: r.max,
+    isSection: r.isSection
+  }));
+
+  const version={
+    id:'v_'+Date.now(),
+    docno:document.getElementById('v_docno').value.trim(),
+    date,revno:parseInt(revno),
+    plants:[...selPlants],
+    lines:[...selLines].sort((a,b)=>a-b),
+    remarks:document.getElementById('v_remarks').value.trim(),
+    editor:'Current User',
+    params:paramSnapshot
+  };
+
+  if(!db.versions[currentProduct])db.versions[currentProduct]=[];
+  db.versions[currentProduct].unshift(version);
+  saveDB(db);
+  renderVersionTable();
+  closeNewVersion();
+  showToast('Version saved successfully.');
+}
+
+// ============================================================
+// VIEW VERSION
+// ============================================================
+function viewVersion(idx){
+  const v=db.versions[currentProduct][idx];
+  let html=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Document No.</div>
+        <div style="font-size:14px;font-weight:500;">${v.docno||'—'}</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Effective Date</div>
+        <div style="font-size:14px;font-weight:500;">${v.date}</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Revision No.</div>
+        <div style="font-size:14px;font-weight:500;color:var(--info);">Rev ${v.revno}</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Plants</div>
+        <div style="font-size:13px;">${v.plants.join(', ')}</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;grid-column:span 2;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Remarks</div>
+        <div style="font-size:13px;">${v.remarks||'—'}</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">
+    <table class="view-ptable">
+      <thead><tr><th>Process</th><th>Parameter / Unit</th><th>Min</th><th>Max</th></tr></thead>
+      <tbody>`;
+
+  const rows=v.params||[];
+  if(rows.length){
+    let lastP='';
+    rows.forEach(r=>{
+      // Fallback support for older saved versions that didn't have the isSection flag
+      const isSec = r.isSection || (r.isSection === undefined && r.unit === '');
+      
+      if(isSec){
+        html+=`<tr style="background:rgba(255,190,0,0.04);"><td class="vp" colspan="2">${r.process}</td><td class="val-na">—</td><td class="val-na">—</td></tr>`;
+        lastP=r.process;return;
+      }
+      const showP=r.process!==lastP;if(showP)lastP=r.process;
+      const hMin=r.min!==undefined&&r.min!=='';
+      const hMax=r.max!==undefined&&r.max!=='';
+      html+=`<tr><td class="vp">${showP?escHtml(r.process):''}</td><td class="vu">${escHtml(r.unit)}</td>
+        <td>${hMin?r.min:'<span class="val-na">—</span>'}</td>
+        <td>${hMax?r.max:'<span class="val-na">—</span>'}</td></tr>`;
+    });
+  } else {
+    html+=`<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:20px;">No parameter data.</td></tr>`;
+  }
+
+  html+='</tbody></table></div>';
+  document.getElementById('viewModalBody').innerHTML=html;
+  document.getElementById('viewOverlay').classList.add('open');
+}
+
+// ============================================================
+// DELETE VERSION
+// ============================================================
+function deleteVersion(idx){
+  if(!confirm('Delete this version? This cannot be undone.'))return;
+  db.versions[currentProduct].splice(idx,1);
+  saveDB(db);
+  renderVersionTable();
+  showToast('Version deleted.');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>{t.style.display='none';},2800);
+}
+
+init();
+</script>
+</body>
+</html>

@@ -179,6 +179,31 @@
     line-height: 1.7;
   }
 
+  .hrt-dev-status-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 10px 24px;
+    background: rgba(255, 190, 0, 0.08);
+    border: 1px solid rgba(255, 190, 0, 0.4);
+    color: #FFBE00;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.22s ease;
+  }
+
+  .hrt-dev-status-btn:hover {
+    background: #FFBE00;
+    color: #0a1628;
+    border-color: #FFBE00;
+    transform: translateY(-2px);
+  }
   .hrt-divider {
     width: 60px;
     height: 2px;
@@ -364,10 +389,15 @@
     </div>
   </header>
 
-  <section class="hrt-hero">
+ <section class="hrt-hero">
     <div class="hrt-platform-label">Enterprise IoT Dashboard Portal</div>
     <h1 class="hrt-hero-title">Welcome to <span>Foresight</span></h1>
     <p class="hrt-hero-desc">Centralized visibility across all production lines, machinery, and facility operations. Select a department below to access its dedicated monitoring dashboard.</p>
+    
+    <a href="https://excalidraw.com/#json=M9EFdBCh1oT7I7Dfe1crA,JDKvEqfUxiJcG4I014-70w" target="_blank" class="hrt-dev-status-btn">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      View Demo Development Status
+    </a>
     <div class="hrt-divider"></div>
   </section>
 

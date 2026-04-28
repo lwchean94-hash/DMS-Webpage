@@ -121,7 +121,7 @@
 
   .l-divider { color: rgba(200,210,230,0.3); }
 
-  /* Custom Date Pickers (Dates Only) */
+  /* Custom Date Pickers */
   .l-date-selector {
     display: flex;
     align-items: center;
@@ -145,7 +145,6 @@
     cursor: pointer;
     color-scheme: dark;
   }
-  
   .l-date-input:focus { border: none; outline: none; }
 
   /* Main Content */
@@ -223,7 +222,7 @@
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid rgba(255,190,0,0.1);
     transition: all 0.2s;
   }
   .l-tank-header:hover { background: rgba(255,190,0,0.1); }
@@ -336,34 +335,31 @@
     <div id="panel-oven" class="l-panel"><div id="ovenChartsContainer"></div></div>
     <div id="panel-leaching" class="l-panel"><div id="leachingChartsContainer"></div></div>
     <div id="panel-postcuring" class="l-panel"><div id="postcuringChartsContainer"></div></div>
-    
-    <div id="panel-postprocess" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
+    <div id="panel-postprocess" class="l-panel"><div id="postprocessChartsContainer"></div></div>
 
   </main>
 </div>
 
 <script>
-// --- 1. PLANT, LINE, & DATE INITIALIZATION ---
+// --- 1. INITIALIZATION & STATE MEMORY ---
 const config = { plants: 9, linesPerPlant: 12 };
+
+// Memory State: Remembers which tank accordions are open so they don't minimize when changing dates
+const expandedTanks = new Set(); 
 
 function initSelectors() {
   const pSelect = document.getElementById('plantSelect');
-  for(let i=1; i<=config.plants; i++) {
-    pSelect.options.add(new Option(`PLANT ${i}`, i));
-  }
+  for(let i=1; i<=config.plants; i++) pSelect.options.add(new Option(`PLANT ${i}`, i));
   
   const hash = window.location.hash;
   const match = hash.match(/#P(\d+)L(\d+)/);
   let pNum = 1, lNum = 1;
   if(match) { pNum = parseInt(match[1]); lNum = parseInt(match[2]); }
-  
   pSelect.value = pNum;
   populateLines(pNum, lNum);
 
-  // Initialize Date selectors (Default to last 3 days to show good trends)
   const now = new Date();
   const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
-  
   const pad = (n) => n.toString().padStart(2, '0');
   const formatD = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   
@@ -386,12 +382,10 @@ function handleNavigationChange() {
   const lSelect = document.getElementById('lineSelect');
   if(event.target.id === 'plantSelect') populateLines(pSelect.value);
   window.history.pushState(null, null, `#P${pSelect.value}L${lSelect.value}`);
-  
   fetchProduct();
   renderAllCharts();
 }
 
-// --- 2. PRODUCT FETCH LOGIC ---
 async function fetchProduct() {
   const display = document.getElementById('productDisplay');
   try {
@@ -401,12 +395,10 @@ async function fetchProduct() {
     const lines = text.split('\n').filter(line => line.trim() !== '');
     display.innerText = lines.length > 0 ? lines[Math.floor(Math.random() * lines.length)] : "Nitrile Examination Glove (3.5g)";
   } catch (error) {
-    const fallbacks = ["Nitrile Examination Glove (3.2g) - Cobalt Blue", "Latex Surgical Glove - Natural", "Nitrile Industrial Glove (4.5g)"];
-    display.innerText = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    display.innerText = "Nitrile Examination Glove (3.2g) - Cobalt Blue";
   }
 }
 
-// --- 3. TAB LOGIC ---
 function switchTab(tabId) {
   document.querySelectorAll('.l-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.l-panel').forEach(p => p.classList.remove('active'));
@@ -414,25 +406,29 @@ function switchTab(tabId) {
   document.getElementById(`panel-${tabId}`).classList.add('active');
 }
 
-// --- 4. ACCORDION LOGIC ---
+// Memory-aware accordion toggle
 function toggleTank(element) {
   const content = element.nextElementSibling;
   const icon = element.querySelector('.l-tank-icon');
+  const tankName = element.querySelector('.l-tank-title').innerText;
+  
   if (content.classList.contains('collapsed')) {
     content.classList.remove('collapsed');
     element.classList.remove('collapsed');
     icon.style.transform = 'rotate(180deg)';
+    expandedTanks.add(tankName); // Save open state
   } else {
     content.classList.add('collapsed');
     element.classList.add('collapsed');
     icon.style.transform = 'rotate(0deg)';
+    expandedTanks.delete(tankName); // Remove open state
   }
 }
 
-// --- 5. CHARTS CONFIGURATION & RENDERING ---
+// --- 2. DATA ARCHITECTURE ---
 const chartInstances = [];
+const chartColors = ['#FFBE00', '#22c55e', '#3b82f6', '#f43f5e', '#a855f7', '#06b6d4', '#f97316', '#14b8a6', '#ec4899'];
 
-// Fully populated process parameters
 const processData = {
   cleaning: {
     "Acid Tank": ["CAA Acid Flow Rate (L/hr)", "Acid Strength (%)", "Temp (°C)"],
@@ -476,13 +472,17 @@ const processData = {
     "Rinse 3": ["Temperature (°C)", "pH"],
     "Rinse 4": ["Temperature (°C)", "pH"],
     "Coating": ["Temperature (°C)", "pH", "Level (mm)"]
+  },
+  postprocess: {
+    "GSR (Glove Stripping Robot)": ["Miss strip (%)", "RT Status (On/Off)", "RB Status (On/Off)", "LT Status (On/Off)", "LB Status (On/Off)"],
+    "ASM (Auto Stacking Machine)": ["ASM Throwout (%)", "RT Status (On/Off)", "RB Status (On/Off)", "LT Status (On/Off)", "LB Status (On/Off)"],
+    "Vision System": ["Stain Defect (%)", "Tear Defect (%)", "Double Dip Defect (%)", "RT Status (On/Off)", "RB Status (On/Off)", "LT Status (On/Off)", "LB Status (On/Off)"]
   }
 };
 
-const chartColors = ['#FFBE00', '#22c55e', '#3b82f6', '#f43f5e', '#a855f7', '#06b6d4', '#f97316', '#14b8a6', '#ec4899'];
-
-// Helper to determine group name & data ranges based on units
 function getUnitInfo(paramName) {
+  if (paramName.includes('Defect')) return { unit: "Defects (%)", min: 0, max: 2, step: false };
+  if (paramName.includes('Throwout') || paramName.includes('Miss strip')) return { unit: "Rejection (%)", min: 0, max: 5, step: false };
   if (paramName.includes('(L/hr)')) return { unit: "Flow Rate (L/hr)", min: 1200, max: 2500, step: false };
   if (paramName.includes('(%)')) return { unit: "Concentration (%)", min: 1, max: 15, step: false };
   if (paramName.includes('(ppm)')) return { unit: "Concentration (ppm)", min: 150, max: 400, step: false };
@@ -490,63 +490,49 @@ function getUnitInfo(paramName) {
   if (paramName.includes('pH')) return { unit: "pH Level", min: 4, max: 10, step: false };
   if (paramName.includes('(mm)')) return { unit: "Tank Level (mm)", min: 600, max: 950, step: false };
   if (paramName.includes('(Hz)')) return { unit: "Motor Speed (Hz)", min: 30, max: 60, step: false };
+  // ANY status parameter is instantly flagged as a 'step' block timeline chart
   if (paramName.includes('Status') || paramName.includes('(On/Off)')) return { unit: "Equipment Status", min: 0, max: 1, step: true };
   return { unit: "Measurement", min: 10, max: 100, step: false };
 }
 
-// Generates points across the full date range
+// Enhanced Mock Data that outputs raw binary state alongside visual height for Status graphs
 function generateMockData(startDt, endDt, count, min, max, isStep) {
-  const data = [], labels = [];
-  const startTime = startDt.getTime();
-  const endTime = endDt.getTime();
+  const data = [], rawData = [], labels = [];
+  const startTime = startDt.getTime(), endTime = endDt.getTime();
   const timeStep = (endTime - startTime) / count;
   const diffDays = (endTime - startTime) / (1000 * 3600 * 24);
-
   const pad = (n) => n.toString().padStart(2, '0');
 
   for(let i=0; i<=count; i++) {
     let d = new Date(startTime + (i * timeStep));
-    
-    // Formatting: If range is more than 1 day, include Month/Day in the label
     let labelStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    if (diffDays > 1.5) {
-      labelStr = `${pad(d.getMonth()+1)}/${pad(d.getDate())} ` + labelStr;
-    }
+    if (diffDays > 1.5) labelStr = `${pad(d.getMonth()+1)}/${pad(d.getDate())} ` + labelStr;
     labels.push(labelStr);
 
     if (isStep) {
-      data.push(Math.random() > 0.15 ? 1 : 0); // Mostly ON
+      const isOn = Math.random() > 0.15 ? 1 : 0; // 85% chance to be ON
+      data.push(1); // Visual height on stacked graph is 1 unit
+      rawData.push(isOn); // The true status
     } else {
-      let base = min + (Math.random() * (max - min));
-      data.push(base);
+      const val = min + (Math.random() * (max - min));
+      data.push(val);
+      rawData.push(val);
     }
   }
-  return { labels, data };
+  return { labels, data, rawData };
 }
 
-function buildChartsForSection(sectionKey, containerId) {
+// Unified chart generator that perfectly handles Standard Lines AND Multi-tier Status Timelines
+function buildChartsForSection(sectionKey, containerId, startDate, endDate, dataPoints) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   const sections = processData[sectionKey];
-  
-  // Calculate Timeframe based on selected Date (adds T00:00:00 and T23:59:59 to cover full days)
-  const startVal = document.getElementById('startDateTime').value;
-  const endVal = document.getElementById('endDateTime').value;
-  const startDate = startVal ? new Date(startVal + "T00:00:00") : new Date(new Date().getTime() - 24*3600*1000);
-  const endDate = endVal ? new Date(endVal + "T23:59:59") : new Date();
-  
-  const diffDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
-  const dataPoints = diffDays > 3 ? 40 : 24; // Smooth lines with plenty of points per day
-
-  Chart.defaults.color = 'rgba(200,210,230,0.6)';
-  Chart.defaults.font.family = 'Inter';
-
   let chartIndex = 0;
 
   Object.keys(sections).forEach((tankName) => {
     const allParams = sections[tankName];
-    
     const groupedParams = {};
+    
     allParams.forEach(param => {
       const info = getUnitInfo(param);
       if(!groupedParams[info.unit]) groupedParams[info.unit] = { info: info, params: [] };
@@ -556,84 +542,110 @@ function buildChartsForSection(sectionKey, containerId) {
     const tankDiv = document.createElement('div');
     tankDiv.className = 'l-tank-group';
     
-    const headerHtml = `
-      <div class="l-tank-header" onclick="toggleTank(this)">
+    // Memory Check: Should this accordion be open?
+    const isExpanded = expandedTanks.has(tankName);
+    const collapsedClass = isExpanded ? '' : 'collapsed';
+    const rotateDeg = isExpanded ? '180deg' : '0deg';
+
+    tankDiv.innerHTML = `
+      <div class="l-tank-header ${collapsedClass}" onclick="toggleTank(this)">
         <div class="l-tank-title">${tankName}</div>
-        <svg class="l-tank-icon" viewBox="0 0 24 24" style="transform: rotate(180deg);"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg class="l-tank-icon" viewBox="0 0 24 24" style="transform: rotate(${rotateDeg});"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="l-tank-content"></div>
+      <div class="l-tank-content ${collapsedClass}"></div>
     `;
-    tankDiv.innerHTML = headerHtml;
     const contentDiv = tankDiv.querySelector('.l-tank-content');
 
     Object.keys(groupedParams).forEach((unitKey) => {
       const groupData = groupedParams[unitKey];
+      const isStatus = unitKey === "Equipment Status"; // Detects if this group needs the timeline blocks
+      const chartType = isStatus ? 'bar' : 'line';
       
       const chartWrapper = document.createElement('div');
       chartWrapper.className = 'l-chart-card';
-      chartWrapper.innerHTML = `
-        <div class="l-chart-title">${unitKey}</div>
-        <div class="l-chart-wrapper"><canvas id="chart-${sectionKey}-${chartIndex}"></canvas></div>
-      `;
+      chartWrapper.innerHTML = `<div class="l-chart-title">${unitKey}</div><div class="l-chart-wrapper"><canvas id="chart-${sectionKey}-${chartIndex}"></canvas></div>`;
       contentDiv.appendChild(chartWrapper);
 
       const datasets = [];
       let commonLabels = [];
 
       groupData.params.forEach((paramName, pIdx) => {
+        const cleanLabel = paramName.replace(/\s*\(.*?\)\s*/g, ''); // e.g. "RT Status (On/Off)" -> "RT Status"
         const mock = generateMockData(startDate, endDate, dataPoints, groupData.info.min, groupData.info.max, groupData.info.step);
         if(pIdx === 0) commonLabels = mock.labels;
         
         datasets.push({
-          label: paramName.replace(/\s*\(.*?\)\s*/g, ''), 
+          label: cleanLabel,
           data: mock.data,
-          borderColor: chartColors[pIdx % chartColors.length],
-          backgroundColor: chartColors[pIdx % chartColors.length] + '20',
-          borderWidth: 2,
+          rawData: mock.rawData, // Attach raw binary data to color the blocks correctly
+          backgroundColor: isStatus 
+             ? (ctx) => {
+                 if (ctx.dataIndex !== undefined) return mock.rawData[ctx.dataIndex] === 1 ? '#22c55e' : '#ef4444'; // Green=On, Red=Off
+                 return '#22c55e';
+               }
+             : chartColors[pIdx % chartColors.length] + '20',
+          borderColor: isStatus ? '#0a1628' : chartColors[pIdx % chartColors.length], // Dark border separates the blocks visually
+          borderWidth: isStatus ? 1 : 2,
           pointRadius: 0,
-          tension: groupData.info.step ? 0 : 0.4,
-          stepped: groupData.info.step ? true : false,
-          fill: groupData.info.step ? true : false
+          tension: isStatus ? 0 : 0.4,
+          fill: true,
+          barPercentage: 1.0, 
+          categoryPercentage: isStatus ? 1.0 : undefined // Removes gaps between timeline blocks
         });
       });
 
       const currentChartIndex = chartIndex;
       setTimeout(() => {
         const ctx = document.getElementById(`chart-${sectionKey}-${currentChartIndex}`).getContext('2d');
-        const newChart = new Chart(ctx, {
-          type: 'line',
+        chartInstances.push(new Chart(ctx, {
+          type: chartType,
           data: { labels: commonLabels, datasets: datasets },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false, 
             interaction: { mode: 'index', intersect: false },
             plugins: {
-              legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11 } } },
-              tooltip: { backgroundColor: 'rgba(10,22,40,0.9)', titleFont: { family: 'Rajdhani', size: 14 }, borderColor: 'rgba(255,190,0,0.3)', borderWidth: 1 }
+              // Hide legend completely for Status blocks as requested
+              legend: { display: !isStatus, position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 11 } } },
+              tooltip: { 
+                backgroundColor: 'rgba(10,22,40,0.9)', titleFont: { family: 'Rajdhani', size: 14 }, 
+                callbacks: {
+                   label: function(context) {
+                      if (isStatus) {
+                         const isOn = context.dataset.rawData[context.dataIndex];
+                         return `${context.dataset.label}: ${isOn ? 'ON' : 'OFF'}`; // Clean ON/OFF Tooltip
+                      }
+                      return `${context.dataset.label}: ${context.raw.toFixed(2)}`;
+                   }
+                }
+              }
             },
             scales: {
-              y: { 
-                grid: { color: 'rgba(255,255,255,0.05)' }, 
-                beginAtZero: groupData.info.step,
-                max: groupData.info.step ? 1.2 : undefined,
-                ticks: { 
-                  stepSize: groupData.info.step ? 1 : undefined,
-                  callback: function(value) {
-                     if(groupData.info.step) return value === 1 ? 'ON' : (value === 0 ? 'OFF' : '');
-                     return value;
-                  }
-                }
+              x: { 
+                stacked: isStatus, 
+                grid: { display: false } 
               },
-              x: { grid: { display: false } }
+              y: { 
+                stacked: isStatus,
+                grid: { color: 'rgba(255,255,255,0.05)' }, 
+                beginAtZero: true, 
+                max: isStatus ? datasets.length : undefined, // Cap height to match number of tiers
+                ticks: { 
+                  stepSize: 1, 
+                  callback: function(value) { 
+                     // Dynamic Y-Axis Labels: Replaces numbers with Tier/Equipment names
+                     if (isStatus && Number.isInteger(value) && value > 0 && value <= datasets.length) {
+                         return datasets[value - 1].label.replace(' Status', ''); 
+                     }
+                     return isStatus ? '' : value; 
+                  } 
+                } 
+              }
             }
           }
-        });
-        chartInstances.push(newChart);
+        }));
       }, 0);
-
       chartIndex++;
     });
-
     container.appendChild(tankDiv);
   });
 }
@@ -641,21 +653,29 @@ function buildChartsForSection(sectionKey, containerId) {
 function renderAllCharts() {
   chartInstances.forEach(chart => chart.destroy());
   chartInstances.length = 0;
-  
-  buildChartsForSection('cleaning', 'cleaningChartsContainer');
-  buildChartsForSection('coagulant', 'coagulantChartsContainer');
-  buildChartsForSection('oven', 'ovenChartsContainer');
-  buildChartsForSection('leaching', 'leachingChartsContainer');
-  buildChartsForSection('postcuring', 'postcuringChartsContainer');
+
+  Chart.defaults.color = 'rgba(200,210,230,0.6)';
+  Chart.defaults.font.family = 'Inter';
+
+  const startVal = document.getElementById('startDateTime').value;
+  const endVal = document.getElementById('endDateTime').value;
+  const startDate = startVal ? new Date(startVal + "T00:00:00") : new Date(new Date().getTime() - 24*3600*1000);
+  const endDate = endVal ? new Date(endVal + "T23:59:59") : new Date();
+  const diffDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+  const dataPoints = diffDays > 3 ? 40 : 24;
+
+  buildChartsForSection('cleaning', 'cleaningChartsContainer', startDate, endDate, dataPoints);
+  buildChartsForSection('coagulant', 'coagulantChartsContainer', startDate, endDate, dataPoints);
+  buildChartsForSection('oven', 'ovenChartsContainer', startDate, endDate, dataPoints);
+  buildChartsForSection('leaching', 'leachingChartsContainer', startDate, endDate, dataPoints);
+  buildChartsForSection('postcuring', 'postcuringChartsContainer', startDate, endDate, dataPoints);
+  buildChartsForSection('postprocess', 'postprocessChartsContainer', startDate, endDate, dataPoints);
 }
 
 function updateChartsTimeframe() { 
   const startObj = document.getElementById('startDateTime');
   const endObj = document.getElementById('endDateTime');
-  // Prevent end date from being earlier than start date
-  if (new Date(startObj.value) > new Date(endObj.value)) {
-    endObj.value = startObj.value;
-  }
+  if (new Date(startObj.value) > new Date(endObj.value)) endObj.value = startObj.value;
   renderAllCharts(); 
 }
 

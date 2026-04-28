@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - CAA Details</title>
+<link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a1628;
+    color: #e8eaf0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .caa-gridbg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.7) 100%),
+      url('../Foresight_Background.jpg'); 
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .caa-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(255,190,0,0.15);
+    background: rgba(10,22,40,0.9);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .caa-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,190,0,0.7);
+    cursor: pointer;
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .caa-back:hover { color: #FFBE00; border-color: rgba(255,190,0,0.5); background: rgba(255,190,0,0.06); }
+  .caa-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .caa-htitle { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+  .caa-htitle span { color: #FFBE00; } 
+
+  /* Navigation Controls */
+  .caa-controls {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 24px 0;
+    max-width: 1700px;
+    margin: 0 auto;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+
+  .control-label { font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 1px; font-weight: 600; }
+  .control-select { background: transparent; border: none; color: #FFBE00; font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; outline: none; cursor: pointer; }
+  .control-select option { background: #0a1628; color: #fff; }
+
+  /* Main Layout */
+  .caa-main {
+    position: relative;
+    z-index: 10;
+    padding: 12px 24px 30px;
+    max-width: 1700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Split System Architecture */
+  .system-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ULTRA-COMPACT SYSTEM PANELS */
+  .sys-panel {
+    background: rgba(10,22,40,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sys-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #e8eaf0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-acid .sys-title { color: #f43f5e; border-color: rgba(244, 63, 94, 0.3); }
+  .panel-alk .sys-title { color: #0ea5e9; border-color: rgba(14, 165, 233, 0.3); }
+
+  /* Sub-sections within Systems */
+  .sub-section { display: flex; flex-direction: column; gap: 4px; }
+  .sub-title { font-size: 9px; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 1px; font-weight: 600; padding-left: 2px;}
+
+  /* Equipment Cards */
+  .eq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Strict 2 column */
+    gap: 8px;
+  }
+
+  .eq-card {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    display: flex;
+    flex-direction: column;
+  }
+  .eq-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.03); }
+  
+  /* Active Selection Styling (Universally Green) */
+  .eq-card.active { 
+    border-color: #22c55e !important; 
+    background: rgba(34, 197, 94, 0.1) !important; 
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2) !important;
+  }
+  
+  .eq-header {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+  }
+
+  .eq-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 2px; align-content: center; flex-grow: 1;}
+  .m-item { display: flex; flex-direction: column; }
+  .m-lbl { font-size: 7px; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; }
+  .m-val { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; color: #e8eaf0; line-height: 1; margin-top: 2px;}
+  .m-val span { font-size: 8px; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-weight: 500; }
+
+  .eq-status {
+    text-align: center;
+    font-size: 7px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 2px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+  .st-standby { background: rgba(245, 158, 11, 0.15); color: #f59e0b; } /* Yellow */
+  .st-mixing { background: rgba(245, 158, 11, 0.15); color: #f59e0b; } /* Yellow */
+  .st-supply { background: rgba(34, 197, 94, 0.15); color: #22c55e; } /* Green */
+
+  /* Active Details Area */
+  .active-panel-row { display: flex; gap: 16px; width: 100%; }
+  .card-std { background: rgba(10,22,40,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 16px; backdrop-filter: blur(8px); display: flex; flex-direction: column; }
+  .card-std-title { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; color: #e8eaf0; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; margin-bottom: 10px;}
+
+  /* Tank Visualizer */
+  .tank-visual-container { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; padding: 5px 0; height: 100%;}
+  .tank-body { width: 80px; height: 110px; border: 3px solid rgba(255,255,255,0.3); border-radius: 10px; position: relative; overflow: hidden; background: rgba(0,0,0,0.4); box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+  .tank-liquid { position: absolute; bottom: 0; left: 0; right: 0; transition: height 1s ease-in-out; }
+  .tank-marks { position: absolute; left: -30px; top: 0; bottom: 0; width: 25px; display: flex; flex-direction: column; justify-content: space-between; font-size: 8px; color: rgba(255,255,255,0.5); text-align: right; padding: 5px 0;}
+  .tank-level-text { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700; color: #fff; text-align: center; line-height: 1;}
+  .tank-level-text span { font-size: 10px; color: rgba(255,255,255,0.5); }
+
+  /* Info Grid (Active Item) */
+  .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; height: 100%; align-content: center;}
+  .info-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center;}
+  .info-label { font-size: 9px; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 1px; margin-bottom: 2px; font-weight: 600;}
+  .info-val { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: #fff; }
+  .info-val span { font-size: 10px; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-weight: 500;}
+
+  /* Alarm Table */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; }
+  .data-table th { padding: 6px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600;}
+  .data-table td { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; }
+  .badge { padding: 3px 8px; border-radius: 12px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; text-align: center; display: inline-block;}
+  .b-crit { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+  .b-clear { background: transparent; color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.2); }
+
+  /* Dynamic Charts Section */
+  .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .chart-box { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; display: none; }
+  .chart-box.visible { display: block; }
+  .chart-wrapper { position: relative; height: 130px; width: 100%; margin-top: 5px; }
+  .c-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+  .c-title { font-size: 10px; text-transform: uppercase; color: rgba(255,255,255,0.6); letter-spacing: 1px; font-weight: 600; }
+  
+  .export-btn { display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; color: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.2s; border: 1px solid transparent;}
+  .export-btn:hover { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+</style>
+</head>
+<body>
+
+<div class="caa-gridbg"></div>
+
+<header class="caa-header">
+  <a href="../hartalega_compounding_landing.html" class="caa-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Main Dashboard
+  </a>
+  <div class="caa-htitle">CENTRALISED ACID & ALKALINE <span>(CAA)</span></div>
+</header>
+
+<div class="caa-controls">
+  <div class="control-group">
+    <span class="control-label">Plant</span>
+    <select class="control-select" id="plantSelect" onchange="updatePlantSelection()"></select>
+  </div>
+</div>
+
+<main class="caa-main">
+  
+  <div class="system-split">
+    
+    <div class="sys-panel panel-acid">
+      <div class="sys-title"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg> ACID SYSTEM</div>
+      
+      <div class="sub-section">
+        <div class="sub-title">Concentrated Tanks</div>
+        <div class="eq-grid" id="gridAcidConc"></div>
+      </div>
+      
+      <div class="sub-section">
+        <div class="sub-title">Diluted Tanks</div>
+        <div class="eq-grid" id="gridAcidDil"></div>
+      </div>
+      
+      <div class="sub-section">
+        <div class="sub-title">Supply Pumps</div>
+        <div class="eq-grid" id="gridAcidPump"></div>
+      </div>
+    </div>
+
+    <div class="sys-panel panel-alk">
+      <div class="sys-title"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg> ALKALINE SYSTEM</div>
+      
+      <div class="sub-section">
+        <div class="sub-title">Concentrated Tanks</div>
+        <div class="eq-grid" id="gridAlkConc"></div>
+      </div>
+      
+      <div class="sub-section">
+        <div class="sub-title">Diluted Tanks</div>
+        <div class="eq-grid" id="gridAlkDil"></div>
+      </div>
+      
+      <div class="sub-section">
+        <div class="sub-title">Supply Pumps</div>
+        <div class="eq-grid" id="gridAlkPump"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="active-panel-row">
+    
+    <div class="card-std" id="cardVisualizer" style="flex: 0 0 200px;">
+      <div class="card-std-title">TANK LEVEL</div>
+      <div class="tank-visual-container">
+        <div style="position: relative;">
+          <div class="tank-marks"><span>500</span><span>250</span><span>0</span></div>
+          <div class="tank-body">
+            <div class="tank-liquid" id="tankLiquid" style="height: 0%;"></div>
+          </div>
+        </div>
+        <div class="tank-level-text" id="tankLevelText">0<br><span>cm</span></div>
+      </div>
+    </div>
+
+    <div class="card-std" style="flex-grow: 1;">
+      <div class="card-std-title">EQUIPMENT INFO</div>
+      <div class="info-grid">
+        <div class="info-box"><div class="info-label">Equipment Name</div><div class="info-val" id="valName">--</div></div>
+        <div class="info-box"><div class="info-label">System Type</div><div class="info-val" id="valSys">--</div></div>
+        
+        <div class="info-box" id="boxInfoLevel"><div class="info-label">Current Level</div><div class="info-val"><span id="valLevel">--</span> <span>cm</span></div></div>
+        <div class="info-box" id="boxInfoStrength"><div class="info-label">Strength / Conc.</div><div class="info-val"><span id="valStrength">--</span> <span>%</span></div></div>
+        <div class="info-box" id="boxInfoHz"><div class="info-label">Motor Speed</div><div class="info-val"><span id="valHz">--</span> <span>Hz</span></div></div>
+        <div class="info-box" id="boxInfoPress"><div class="info-label">Supply Pressure</div><div class="info-val"><span id="valPress">--</span> <span>bar</span></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card-std">
+    <div class="card-std-title" id="activeEqTitle" style="border:none; margin-bottom:0;">Select Equipment <span>to view historical trends</span></div>
+    
+    <div class="charts-grid" id="chartsContainer">
+      <div class="chart-box" id="boxChartLevel">
+        <div class="c-head">
+          <div class="c-title">Tank Level Trend (Last 30 Days)</div>
+          <div class="export-btn" onclick="exportToCSV('level')" title="Export Data"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
+        </div>
+        <div class="chart-wrapper"><canvas id="chartLevel"></canvas></div>
+      </div>
+
+      <div class="chart-box" id="boxChartStrength">
+        <div class="c-head">
+          <div class="c-title">Concentration Strength % (Last 30 Days)</div>
+          <div class="export-btn" onclick="exportToCSV('strength')" title="Export Data"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
+        </div>
+        <div class="chart-wrapper"><canvas id="chartStrength"></canvas></div>
+      </div>
+
+      <div class="chart-box" id="boxChartHz">
+        <div class="c-head">
+          <div class="c-title" id="titleHz">Motor Hz Trend (Last 30 Days)</div>
+          <div class="export-btn" onclick="exportToCSV('hz')" title="Export Data"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
+        </div>
+        <div class="chart-wrapper"><canvas id="chartHz"></canvas></div>
+      </div>
+
+      <div class="chart-box" id="boxChartPressure">
+        <div class="c-head">
+          <div class="c-title">Supply Pressure Trend (Last 30 Days)</div>
+          <div class="export-btn" onclick="exportToCSV('pressure')" title="Export Data"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
+        </div>
+        <div class="chart-wrapper"><canvas id="chartPressure"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-std" style="margin-top: 16px;">
+    <div class="card-std-title">ALARM LOG</div>
+    <table class="data-table" id="alarmTable">
+      <thead><tr><th>Time</th><th>Code</th><th>Message</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</main>
+
+<script>
+/**
+ * Application State
+ */
+let sysData = {};
+let activeEqId = null;
+let chartInstances = { level: null, strength: null, hz: null, pressure: null };
+
+Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const commonOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: {
+    x: { grid: { display: false, drawBorder: false }, ticks: { autoSkip: true, maxTicksLimit: 6 } },
+    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, border: { dash: [4, 4] } }
+  },
+  elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }
+};
+
+/**
+ * Initialization
+ */
+function initDropdowns() {
+  const pSelect = document.getElementById('plantSelect');
+  for(let i=1; i<=9; i++) {
+    let opt = document.createElement('option');
+    opt.value = i; opt.innerText = `Plant ${i}`;
+    pSelect.appendChild(opt);
+  }
+}
+
+// Called on initial page load
+function loadDashboard() {
+  const hash = window.location.hash.toUpperCase();
+  let pNum = 1;
+
+  if (hash && hash.startsWith('#P')) {
+    pNum = parseInt(hash.replace('#P', ''));
+  }
+
+  const pSelect = document.getElementById('plantSelect');
+  if(pSelect.options.length === 0) initDropdowns();
+  
+  pSelect.value = pNum; 
+  history.replaceState(null, null, `#P${pNum}`);
+
+  sysData = generateSystemData(pNum);
+  renderEquipmentCards();
+  
+  // Auto-select first item
+  selectEq('acid_c1');
+}
+
+// Called specifically when the user changes the plant dropdown
+function updatePlantSelection() {
+  const pNum = document.getElementById('plantSelect').value;
+  history.replaceState(null, null, `#P${pNum}`);
+  
+  sysData = generateSystemData(pNum);
+  renderEquipmentCards();
+  selectEq('acid_c1'); 
+}
+
+/**
+ * Data Generators
+ */
+function generateDateLabels() {
+  const labels = [];
+  const today = new Date();
+  
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    labels.push(d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+  }
+  return labels;
+}
+
+function generateSystemData(pNum) {
+  const seed = parseInt(pNum) * 10;
+  const random = (min, max) => min + (Math.abs(Math.sin(seed + Math.random())) * (max - min));
+  const randomInt = (min, max) => Math.floor(random(min, max));
+
+  const config = {
+    acid_c1: { id: 'acid_c1', type: 'tank_conc', sys: 'acid', name: 'Conc. Acid Tank 1' },
+    acid_c2: { id: 'acid_c2', type: 'tank_conc', sys: 'acid', name: 'Conc. Acid Tank 2' },
+    acid_d1: { id: 'acid_d1', type: 'tank_dil',  sys: 'acid', name: 'Diluted Acid Tank 1' },
+    acid_d2: { id: 'acid_d2', type: 'tank_dil',  sys: 'acid', name: 'Diluted Acid Tank 2' },
+    acid_p1: { id: 'acid_p1', type: 'pump',      sys: 'acid', name: 'Acid Supply Pump 1' },
+    acid_p2: { id: 'acid_p2', type: 'pump',      sys: 'acid', name: 'Acid Supply Pump 2' },
+
+    alk_c1:  { id: 'alk_c1',  type: 'tank_conc', sys: 'alk',  name: 'Conc. Alkaline Tank 1' },
+    alk_d1:  { id: 'alk_d1',  type: 'tank_dil',  sys: 'alk',  name: 'Diluted Alkaline Tank 1' },
+    alk_d2:  { id: 'alk_d2',  type: 'tank_dil',  sys: 'alk',  name: 'Diluted Alkaline Tank 2' },
+    alk_p1:  { id: 'alk_p1',  type: 'pump',      sys: 'alk',  name: 'Alkaline Supply Pump 1' },
+    alk_p2:  { id: 'alk_p2',  type: 'pump',      sys: 'alk',  name: 'Alkaline Supply Pump 2' }
+  };
+
+  // Pre-determine Tank Statuses to guarantee exactly 1 supplying
+  const preStatus = {};
+  if (Math.random() > 0.5) {
+    preStatus['acid_d1'] = 'SUPPLYING';
+    preStatus['acid_d2'] = Math.random() > 0.5 ? 'MIXING' : 'STANDBY';
+  } else {
+    preStatus['acid_d2'] = 'SUPPLYING';
+    preStatus['acid_d1'] = Math.random() > 0.5 ? 'MIXING' : 'STANDBY';
+  }
+
+  if (Math.random() > 0.5) {
+    preStatus['alk_d1'] = 'SUPPLYING';
+    preStatus['alk_d2'] = Math.random() > 0.5 ? 'MIXING' : 'STANDBY';
+  } else {
+    preStatus['alk_d2'] = 'SUPPLYING';
+    preStatus['alk_d1'] = Math.random() > 0.5 ? 'MIXING' : 'STANDBY';
+  }
+
+  const data = {};
+  const labels = generateDateLabels();
+
+  for (const key in config) {
+    let eq = config[key];
+    let isTank = eq.type.startsWith('tank');
+    let isPump = eq.type === 'pump';
+    
+    // Exact Strengths Logic
+    let strengthBase = 0;
+    if(eq.type === 'tank_conc') {
+      strengthBase = (eq.sys === 'acid') ? random(67.5, 68.5) : random(49.5, 50.5);
+    } else if (eq.type === 'tank_dil') {
+      strengthBase = (eq.sys === 'acid') ? random(2.5, 3.0) : random(0.3, 0.45);
+    }
+
+    let hzBase = 0;
+    if (isPump) {
+      hzBase = randomInt(35, 45);
+    } else if (eq.type === 'tank_dil' && preStatus[key] === 'MIXING') {
+      hzBase = randomInt(35, 45); // Only spin stirrer if currently mixing
+    }
+    
+    let pressBase = isPump ? random(1.8, 2.2) : 0;
+    
+    let status = '';
+    if(eq.type === 'tank_dil') {
+      status = preStatus[key];
+    } else if (eq.type === 'pump') {
+      status = isPump ? (hzBase > 0 ? 'SUPPLYING' : 'STANDBY') : '';
+    }
+
+    // --- REALISTIC LEVEL TREND LOGIC (30 DAYS) ---
+    let generatedTrendLevel = [];
+    if (eq.type === 'tank_dil') {
+      let curLvl = randomInt(200, 480);
+      for (let i = 0; i < 30; i++) {
+        if (curLvl < 80) curLvl = randomInt(400, 480); // New batch prepared (spike)
+        else curLvl -= randomInt(40, 80); // Continuous consumption (slope)
+        generatedTrendLevel.push(Math.max(0, curLvl));
+      }
+    } else if (eq.type === 'tank_conc') {
+      let curLvl = randomInt(300, 480);
+      for (let i = 0; i < 30; i++) {
+        let r = Math.random();
+        if (r < 0.05) {
+          curLvl = Math.min(500, curLvl + randomInt(200, 300)); // Shipment
+        } else if (r < 0.20) {
+          curLvl = Math.max(50, curLvl - randomInt(60, 100)); // Dilution process drop
+        }
+        generatedTrendLevel.push(curLvl);
+      }
+    }
+    
+    let levelBase = isTank ? generatedTrendLevel[29] : 0;
+
+    data[key] = {
+      ...eq,
+      level: levelBase,
+      strength: strengthBase.toFixed(2),
+      hz: hzBase,
+      pressure: pressBase.toFixed(2),
+      status: status,
+      labels: labels,
+      
+      trendLevel: generatedTrendLevel,
+      trendStrength: isTank ? Array.from({length: 30}, () => strengthBase + random(-0.1, 0.1)) : [],
+      trendHz: Array.from({length: 30}, () => Math.max(0, hzBase + randomInt(-2, 2))),
+      trendPressure: isPump ? Array.from({length: 30}, () => pressBase + random(-0.1, 0.1)) : []
+    };
+  }
+  return data;
+}
+
+/**
+ * Rendering Sub-Sections
+ */
+function renderEquipmentCards() {
+  const grids = ['gridAcidConc', 'gridAcidDil', 'gridAcidPump', 'gridAlkConc', 'gridAlkDil', 'gridAlkPump'];
+  grids.forEach(g => document.getElementById(g).innerHTML = '');
+
+  for (const key in sysData) {
+    const eq = sysData[key];
+    const sysClass = eq.sys === 'acid' ? 'type-acid' : 'type-alk';
+
+    let metricsHtml = '';
+    if (eq.type.startsWith('tank')) {
+      metricsHtml += `<div class="m-item"><span class="m-lbl">Level</span><div class="m-val">${eq.level} <span>cm</span></div></div>`;
+      metricsHtml += `<div class="m-item"><span class="m-lbl">Strength</span><div class="m-val">${eq.strength} <span>%</span></div></div>`;
+      if (eq.type === 'tank_dil') {
+        metricsHtml += `<div class="m-item"><span class="m-lbl">Stirrer</span><div class="m-val">${eq.hz} <span>Hz</span></div></div>`;
+      }
+    } else {
+      metricsHtml += `<div class="m-item"><span class="m-lbl">Speed</span><div class="m-val">${eq.hz} <span>Hz</span></div></div>`;
+      metricsHtml += `<div class="m-item"><span class="m-lbl">Pressure</span><div class="m-val">${eq.pressure} <span>bar</span></div></div>`;
+    }
+
+    let stHtml = '';
+    if (eq.type !== 'tank_conc') {
+      let stClass = 'st-standby'; // Default handles Standby & Mixing
+      if(eq.status === 'SUPPLYING') stClass = 'st-supply';
+      else if(eq.status === 'MIXING') stClass = 'st-mixing';
+      stHtml = `<div class="eq-status ${stClass}">${eq.status}</div>`;
+    }
+
+    const card = document.createElement('div');
+    card.className = `eq-card ${sysClass}`;
+    card.id = `card-${eq.id}`;
+    card.onclick = () => selectEq(eq.id);
+    
+    card.innerHTML = `
+      <div class="eq-header">${eq.name}</div>
+      <div class="eq-metrics">${metricsHtml}</div>
+      ${stHtml}
+    `;
+
+    let targetGrid = '';
+    if (eq.sys === 'acid') {
+      if (eq.type === 'tank_conc') targetGrid = 'gridAcidConc';
+      else if (eq.type === 'tank_dil') targetGrid = 'gridAcidDil';
+      else targetGrid = 'gridAcidPump';
+    } else {
+      if (eq.type === 'tank_conc') targetGrid = 'gridAlkConc';
+      else if (eq.type === 'tank_dil') targetGrid = 'gridAlkDil';
+      else targetGrid = 'gridAlkPump';
+    }
+    
+    document.getElementById(targetGrid).appendChild(card);
+  }
+}
+
+/**
+ * Handle Equipment Selection
+ */
+function selectEq(id) {
+  activeEqId = id;
+  const eq = sysData[id];
+
+  document.querySelectorAll('.eq-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`card-${id}`).classList.add('active');
+
+  document.getElementById('activeEqTitle').innerHTML = `${eq.name} <span>Historical Trends (Last 30 Days)</span>`;
+
+  document.getElementById('valName').innerText = eq.name;
+  document.getElementById('valSys').innerText = eq.sys === 'acid' ? 'Acid System' : 'Alkaline System';
+  document.getElementById('valSys').style.color = eq.sys === 'acid' ? '#f43f5e' : '#0ea5e9';
+
+  document.getElementById('boxInfoLevel').style.display = eq.type.startsWith('tank') ? 'flex' : 'none';
+  document.getElementById('boxInfoStrength').style.display = eq.type.startsWith('tank') ? 'flex' : 'none';
+  document.getElementById('boxInfoHz').style.display = eq.type !== 'tank_conc' ? 'flex' : 'none';
+  document.getElementById('boxInfoPress').style.display = eq.type === 'pump' ? 'flex' : 'none';
+
+  if(eq.type.startsWith('tank')) {
+    document.getElementById('valLevel').innerText = eq.level;
+    document.getElementById('valStrength').innerText = eq.strength;
+  }
+  if(eq.type !== 'tank_conc') {
+    document.getElementById('valHz').innerText = eq.hz;
+  }
+  if(eq.type === 'pump') {
+    document.getElementById('valPress').innerText = eq.pressure;
+  }
+
+  const visCard = document.getElementById('cardVisualizer');
+  if(eq.type === 'pump') {
+    visCard.style.display = 'none';
+  } else {
+    visCard.style.display = 'flex';
+    document.getElementById('tankLevelText').innerHTML = `${eq.level}<br><span>cm</span>`;
+    
+    const pct = (eq.level / 500) * 100; 
+    const tLiquid = document.getElementById('tankLiquid');
+    tLiquid.style.height = `${Math.min(pct, 100)}%`;
+    
+    if(eq.sys === 'acid') {
+      tLiquid.style.background = 'linear-gradient(180deg, #f43f5e 0%, #be123c 100%)';
+      tLiquid.style.boxShadow = '0 -5px 15px rgba(244, 63, 94, 0.3)';
+    } else {
+      tLiquid.style.background = 'linear-gradient(180deg, #0ea5e9 0%, #0369a1 100%)';
+      tLiquid.style.boxShadow = '0 -5px 15px rgba(14, 165, 233, 0.3)';
+    }
+  }
+
+  document.getElementById('boxChartLevel').classList.toggle('visible', eq.type.startsWith('tank'));
+  document.getElementById('boxChartStrength').classList.toggle('visible', eq.type.startsWith('tank'));
+  document.getElementById('boxChartHz').classList.toggle('visible', eq.type !== 'tank_conc');
+  document.getElementById('boxChartPressure').classList.toggle('visible', eq.type === 'pump');
+
+  document.getElementById('titleHz').innerText = eq.type === 'pump' ? 'Pump Hz Trend (Last 30 Days)' : 'Stirrer Hz Trend (Last 30 Days)';
+
+  populateAlarmTable(eq);
+  drawCharts(eq);
+}
+
+function populateAlarmTable(eq) {
+  const tbody = document.querySelector('#alarmTable tbody');
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  if (Math.random() > 0.7) {
+    const err = eq.type === 'pump' ? 'Pressure Drop' : 'Level Low Warning';
+    tbody.innerHTML = `<tr>
+      <td>${now.toLocaleDateString('en-GB')} ${timeStr}</td><td>SYS-WARN</td><td>${err} detected</td><td><span class="badge b-crit">ACTIVE</span></td>
+    </tr>`;
+  } else {
+    tbody.innerHTML = `<tr>
+      <td>${now.toLocaleDateString('en-GB')} ${timeStr}</td><td>STABLE</td><td>No abnormal condition detected</td><td><span class="badge b-clear">CLEAR</span></td>
+    </tr>`;
+  }
+}
+
+function drawCharts(eq) {
+  const color = eq.sys === 'acid' ? '#f43f5e' : '#0ea5e9';
+  const bgColor = eq.sys === 'acid' ? 'rgba(244, 63, 94, 0.1)' : 'rgba(14, 165, 233, 0.1)';
+
+  Object.values(chartInstances).forEach(chart => { if(chart) chart.destroy(); });
+
+  if (eq.type.startsWith('tank')) {
+    const ctxLvl = document.getElementById('chartLevel').getContext('2d');
+    chartInstances.level = new Chart(ctxLvl, {
+      type: 'line',
+      data: { labels: eq.labels, datasets: [{ data: eq.trendLevel, borderColor: color, backgroundColor: bgColor, borderWidth: 2, tension: 0.3, fill: true }] },
+      options: commonOptions
+    });
+
+    const ctxStr = document.getElementById('chartStrength').getContext('2d');
+    chartInstances.strength = new Chart(ctxStr, {
+      type: 'line',
+      data: { labels: eq.labels, datasets: [{ data: eq.trendStrength, borderColor: color, borderWidth: 2, tension: 0.3 }] },
+      options: commonOptions
+    });
+  }
+
+  if (eq.type !== 'tank_conc') {
+    const ctxHz = document.getElementById('chartHz').getContext('2d');
+    chartInstances.hz = new Chart(ctxHz, {
+      type: 'line',
+      data: { labels: eq.labels, datasets: [{ data: eq.trendHz, borderColor: color, borderWidth: 2, tension: 0.3 }] },
+      options: commonOptions
+    });
+  }
+
+  if (eq.type === 'pump') {
+    const ctxPress = document.getElementById('chartPressure').getContext('2d');
+    chartInstances.pressure = new Chart(ctxPress, {
+      type: 'line',
+      data: { labels: eq.labels, datasets: [{ data: eq.trendPressure, borderColor: color, backgroundColor: bgColor, borderWidth: 2, tension: 0.3, fill: true }] },
+      options: commonOptions
+    });
+  }
+}
+
+function exportToCSV(metricType) {
+  if (!activeEqId) return;
+  const eq = sysData[activeEqId];
+  let dataArray = [];
+  let title = "";
+
+  if (metricType === 'level') { dataArray = eq.trendLevel; title = "Level_cm"; }
+  if (metricType === 'strength') { dataArray = eq.trendStrength; title = "Strength_Pct"; }
+  if (metricType === 'hz') { dataArray = eq.trendHz; title = "Motor_Hz"; }
+  if (metricType === 'pressure') { dataArray = eq.trendPressure; title = "Pressure_bar"; }
+
+  if (!dataArray || dataArray.length === 0) return;
+
+  let csvContent = "Date," + title + "\n";
+  for (let i = 0; i < eq.labels.length; i++) {
+    csvContent += `${eq.labels[i]},${dataArray[i].toFixed(2)}\n`;
+  }
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `CAA_${eq.name.replace(/\s+/g, '_')}_${title}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+window.onload = loadDashboard;
+</script>
+</body>
+</html>

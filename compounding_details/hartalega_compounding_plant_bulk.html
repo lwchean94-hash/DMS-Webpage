@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - Bulk Tank Details</title>
+<link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a1628;
+    color: #e8eaf0;
+    min-height: 100vh;
+    overflow-x: hidden;
+	zoom: 80%;
+  }
+
+  .bd-gridbg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.7) 100%),
+      url('../Foresight_Background.jpg'); 
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .bd-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(255,190,0,0.2);
+    background: rgba(10,22,40,0.9);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .bd-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,190,0,0.7);
+    cursor: pointer;
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .bd-back:hover { color: #FFBE00; border-color: rgba(255,190,0,0.5); background: rgba(255,190,0,0.06); }
+  .bd-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .bd-htitle { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+  .bd-htitle span { color: #22c55e; }
+
+  /* Navigation Controls */
+  .bd-controls {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px 0;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+
+  .control-label { font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 1px; font-weight: 600; }
+  .control-select { 
+    background: transparent; 
+    border: none; 
+    color: #FFBE00; 
+    font-family: 'Rajdhani', sans-serif; 
+    font-size: 16px; 
+    font-weight: 700; 
+    outline: none; 
+    cursor: pointer; 
+  }
+  .control-select option { background: #0a1628; color: #fff; }
+
+  /* Main Layout */
+  .bd-main {
+    position: relative;
+    z-index: 10;
+    padding: 16px 24px 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 20px;
+  }
+
+  .card {
+    background: rgba(10,22,40,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+  }
+  
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #e8eaf0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 10px;
+  }
+
+  /* Tank Visualizer */
+  .tank-visual-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; }
+  .tank-body {
+    width: 120px;
+    height: 180px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(0,0,0,0.4);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+  }
+  .tank-liquid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, #4ade80 0%, #166534 100%);
+    transition: height 1s ease-in-out;
+    box-shadow: 0 -5px 15px rgba(74, 222, 128, 0.3);
+  }
+  .tank-marks { position: absolute; left: -40px; top: 0; bottom: 0; width: 30px; display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; padding: 10px 0;}
+  .tank-level-text { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight: 700; color: #fff; margin-top: 16px; }
+  .tank-level-text span { font-size: 14px; color: rgba(255,255,255,0.5); }
+
+  /* Quality Info Grid */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .info-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 6px; padding: 16px 12px; }
+  .info-label { font-size: 9px; text-transform: uppercase; color: #4ade80; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600;}
+  .info-val { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: #fff; }
+  .info-val span { font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-weight: 500;}
+
+  /* Uniform Charts Container */
+  .chart-wrapper { position: relative; height: 160px; width: 100%; margin-top: 5px; }
+  
+  /* Added Header for Charts to house title and export button */
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .chart-title { font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.6); letter-spacing: 1px; font-weight: 600; }
+  
+  /* Export Button */
+  .export-btn { display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; color: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.2s; border: 1px solid transparent;}
+  .export-btn:hover { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+  /* Interactive Tables */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; }
+  .data-table th { padding: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600;}
+  .data-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; }
+  
+  /* Interactive Row Styling */
+  .data-table tbody tr { cursor: pointer; transition: all 0.2s; border-left: 2px solid transparent; }
+  .data-table tbody tr:hover { background: rgba(255,255,255,0.04); }
+  .data-table tbody tr.selected-row { 
+    background: rgba(34, 197, 94, 0.1); 
+    border-left: 2px solid #22c55e; 
+  }
+  
+  .badge { padding: 4px 10px; border-radius: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; text-align: center; display: inline-block;}
+  .b-run { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); }
+  .b-comp { background: rgba(34, 197, 94, 0.15); color: #22c55e; border-color: rgba(34, 197, 94, 0.3); }
+  .b-crit { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+  .b-clear { background: transparent; color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.2); }
+
+</style>
+</head>
+<body>
+
+<div class="bd-gridbg"></div>
+
+<header class="bd-header">
+  <a href="../hartalega_compounding_landing.html" class="bd-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Main Dashboard
+  </a>
+  <div class="bd-htitle">BULK TANK <span>DETAIL DASHBOARD</span></div>
+</header>
+
+<div class="bd-controls">
+  <div class="control-group">
+    <span class="control-label">Plant</span>
+    <select class="control-select" id="plantSelect" onchange="updateFromDropdowns()"></select>
+  </div>
+  <div class="control-group">
+    <span class="control-label">Tank</span>
+    <select class="control-select" id="tankSelect" onchange="updateFromDropdowns()"></select>
+  </div>
+</div>
+
+<main class="bd-main">
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <div style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 20px;">
+      
+      <div class="card" style="align-items: center; justify-content: center;">
+        <div class="card-title" style="width: 100%;">TANK LEVEL</div>
+        <div class="tank-visual-container">
+          <div style="position: relative;">
+            <div class="tank-marks">
+              <span>300</span>
+              <span>150</span>
+              <span>0</span>
+            </div>
+            <div class="tank-body">
+              <div class="tank-liquid" id="tankLiquid" style="height: 0%;"></div>
+            </div>
+          </div>
+          <div class="tank-level-text" id="tankLevelText">0 <span>cm</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">QUALITY & INFO</div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-label">Batch No</div>
+            <div class="info-val" id="valBatch">--</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">Latex Type</div>
+            <div class="info-val" id="valType">--</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">Supply Tank</div>
+            <div class="info-val" id="valSupply">--</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">Latex Age</div>
+            <div class="info-val"><span id="valAge">--</span> <span>Hr</span></div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">TSC</div>
+            <div class="info-val"><span id="valTsc">--</span> <span>%</span></div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">Stirrer Speed</div>
+            <div class="info-val"><span id="valSpeed">--</span> <span>Hz</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Added Export Buttons to Charts -->
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">TSC Trend (Batch Lifespan)</div>
+        <div class="export-btn" onclick="exportToCSV('tsc')" title="Export Data to CSV">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </div>
+      </div>
+      <div class="chart-wrapper"><canvas id="tscChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">Stirrer Speed Trend (Batch Lifespan)</div>
+        <div class="export-btn" onclick="exportToCSV('hz')" title="Export Data to CSV">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </div>
+      </div>
+      <div class="chart-wrapper"><canvas id="stirrerChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">Level Trend (Batch Lifespan)</div>
+        <div class="export-btn" onclick="exportToCSV('level')" title="Export Data to CSV">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </div>
+      </div>
+      <div class="chart-wrapper"><canvas id="levelChart"></canvas></div>
+    </div>
+
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    
+    <div class="card">
+      <div class="card-title">BULK TANK STATUS</div>
+      <table class="data-table" id="statusTable">
+        <thead>
+          <tr><th>Batch</th><th>Latex Type</th><th>Supply Tank</th><th>Latex Age</th><th>TSC</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="flex-grow: 1;">
+      <div class="card-title">ALARM LOG</div>
+      <table class="data-table" id="alarmTable">
+        <thead>
+          <tr><th>Time</th><th>Code</th><th>Message</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<script>
+/**
+ * Global State
+ */
+let chartTsc, chartStirrer, chartLevel;
+let currentTankHistory = []; // Holds the active and historical batches for the selected tank
+let activeBatchIndex = 0; // Tracks currently selected batch
+
+/**
+ * Common Chart.js Configuration
+ */
+Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const commonOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: {
+    x: { 
+      grid: { display: false, drawBorder: false }, 
+      ticks: { autoSkip: true, maxTicksLimit: 8, maxRotation: 0 } 
+    },
+    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, border: { dash: [4, 4] } }
+  },
+  elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }
+};
+
+/**
+ * Setup Dropdowns
+ */
+function initDropdowns() {
+  const pSelect = document.getElementById('plantSelect');
+  for(let i=1; i<=9; i++) {
+    let opt = document.createElement('option');
+    opt.value = i; opt.innerText = `Plant ${i}`;
+    pSelect.appendChild(opt);
+  }
+
+  const tSelect = document.getElementById('tankSelect');
+  for(let i=1; i<=40; i++) {
+    let num = String(i).padStart(2, '0');
+    let opt = document.createElement('option');
+    opt.value = `BT${num}`; opt.innerText = `BT ${num}`;
+    tSelect.appendChild(opt);
+  }
+}
+
+/**
+ * Data Generators (Creates 3 batches: 1 Running, 2 Completed with Sequential non-overlapping dates)
+ */
+function generateTankHistory(pNum, tId) {
+  const seed = (parseInt(pNum) * 100) + parseInt(tId.replace('BT', ''));
+  const random = (min, max) => min + (Math.abs(Math.sin(seed)) * (max - min));
+  const randomInt = (min, max) => Math.floor(random(min, max));
+
+  const types = ["NBR Latex", "Natural Latex", "Synthetic Polymer"];
+  let history = [];
+  
+  let anchorDate = new Date(); // Start anchoring from today
+
+  // Generate 3 historical batches for this specific tank moving backward in time
+  for(let i = 0; i < 3; i++) {
+    const batchSeed = seed + i;
+    const tscBase = random(58, 63) - (i * 0.8); // Older batches vary slightly
+    const status = i === 0 ? 'RUNNING' : 'COMPLETED';
+
+    // Set end level: Completed batches end low, Running batch can be anywhere between 50-280
+    const endLevel = status === 'RUNNING' ? randomInt(50, 280) : randomInt(10, 40);
+    // Set start level: Near full capacity
+    const startLevel = randomInt(250, 290);
+    
+    // Calculate the drop per step to simulate consumption over 30 days
+    const levelDropPerStep = (startLevel - endLevel) / 29;
+
+    // 1. Generate exactly 30 sequential dates ending at the anchorDate
+    let batchLabels = [];
+    for (let j = 29; j >= 0; j--) {
+      let d = new Date(anchorDate);
+      d.setDate(d.getDate() - j);
+      batchLabels.push(d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+    }
+
+    history.push({
+      batch: `BT-2026-${String(batchSeed).padStart(4, '0')}`,
+      type: types[batchSeed % 3],
+      supply: `MT ${String(randomInt(1, 24)).padStart(2, '0')}A`,
+      age: (random(8, 24) + (i * 12)).toFixed(1),
+      tsc: tscBase.toFixed(2),
+      speed: randomInt(35, 45),
+      level: endLevel,
+      status: status,
+      labels: batchLabels, 
+      
+      trendTsc: Array.from({length: 30}, () => tscBase + (Math.random() * 0.8 - 0.4)),
+      trendSpeed: Array.from({length: 30}, () => randomInt(38, 44)),
+      
+      // 2. Realistic Level Trend (Starts High, goes Down to endLevel)
+      trendLevel: Array.from({length: 30}, (_, idx) => {
+        let expectedLevel = startLevel - (idx * levelDropPerStep);
+        expectedLevel += randomInt(-3, 3); // Add minor random fluctuation
+        return Math.max(0, Math.min(300, expectedLevel));
+      })
+    });
+
+    // 3. Push the anchor date back for the next older batch. 
+    anchorDate.setDate(anchorDate.getDate() - 30 - randomInt(1, 3));
+  }
+
+  return history;
+}
+
+/**
+ * Core Initialization Function
+ */
+function loadDashboard() {
+  const hash = window.location.hash.toUpperCase();
+  let pNum = 1;
+  let tId = 'BT01';
+
+  if (hash && hash.startsWith('#P')) {
+    const match = hash.match(/#P(\d+)(BT\d+)/);
+    if (match) {
+      pNum = parseInt(match[1]);
+      tId = match[2];
+    }
+  }
+
+  document.getElementById('plantSelect').value = pNum;
+  document.getElementById('tankSelect').value = tId;
+
+  // Generate full history array for this tank
+  currentTankHistory = generateTankHistory(pNum, tId);
+
+  // Populate Table and load the active batch (index 0) by default
+  populateStatusTable(currentTankHistory);
+  populateAlarmTable(tId);
+  selectBatch(0); 
+}
+
+function updateFromDropdowns() {
+  const pNum = document.getElementById('plantSelect').value;
+  const tId = document.getElementById('tankSelect').value;
+  history.replaceState(null, null, `#P${pNum}${tId}`);
+  loadDashboard();
+}
+
+/**
+ * Renders the Interactive Status Table
+ */
+function populateStatusTable(historyArray) {
+  const tbody = document.querySelector('#statusTable tbody');
+  let html = '';
+  
+  historyArray.forEach((b, index) => {
+    const badgeClass = b.status === 'RUNNING' ? 'b-run' : 'b-comp';
+    html += `
+      <tr id="batch-row-${index}" onclick="selectBatch(${index})">
+        <td>${b.batch}</td><td>${b.type}</td><td>${b.supply}</td>
+        <td>${b.age} Hr</td><td>${b.tsc}%</td><td><span class="badge ${badgeClass}">${b.status}</span></td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+/**
+ * Master function triggered when a batch row is clicked
+ */
+function selectBatch(index) {
+  activeBatchIndex = index;
+  const selectedData = currentTankHistory[index];
+
+  // 1. Update visual selection in the table
+  const rows = document.querySelectorAll('#statusTable tbody tr');
+  rows.forEach((row, i) => {
+    if (i === index) row.classList.add('selected-row');
+    else row.classList.remove('selected-row');
+  });
+
+  // 2. Update Top Quality & Info Panel
+  document.getElementById('valBatch').innerText = selectedData.batch;
+  document.getElementById('valType').innerText = selectedData.type;
+  document.getElementById('valSupply').innerText = selectedData.supply;
+  document.getElementById('valAge').innerText = selectedData.age;
+  document.getElementById('valTsc').innerText = selectedData.tsc;
+  document.getElementById('valSpeed').innerText = selectedData.speed;
+
+  // 3. Update Tank Level Visualizer
+  const pct = (selectedData.level / 300) * 100;
+  document.getElementById('tankLiquid').style.height = `${Math.min(pct, 100)}%`;
+  document.getElementById('tankLevelText').innerHTML = `${selectedData.level} <span>cm</span>`;
+
+  // 4. Redraw Charts with the historical data AND specific dates of the selected batch
+  drawCharts(selectedData);
+}
+
+function populateAlarmTable(tId) {
+  const tbody = document.querySelector('#alarmTable tbody');
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  if (Math.random() > 0.6) {
+    tbody.innerHTML = `<tr>
+      <td>${timeStr}</td><td>${tId}-LVL</td><td>Level Low Warning</td><td><span class="badge b-crit">ACTIVE</span></td>
+    </tr>`;
+  } else {
+    tbody.innerHTML = `<tr>
+      <td>${timeStr}</td><td>STABLE</td><td>No abnormal condition detected</td><td><span class="badge b-clear">CLEAR</span></td>
+    </tr>`;
+  }
+}
+
+/**
+ * Chart Drawing Logic
+ */
+function drawCharts(data) {
+  // Uses the non-overlapping dates specific to the clicked batch
+  const labels = data.labels; 
+
+  if(chartTsc) chartTsc.destroy();
+  if(chartStirrer) chartStirrer.destroy();
+  if(chartLevel) chartLevel.destroy();
+
+  const ctxTsc = document.getElementById('tscChart').getContext('2d');
+  chartTsc = new Chart(ctxTsc, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ data: data.trendTsc, borderColor: '#3b82f6', borderWidth: 2, tension: 0.3 }] },
+    options: commonOptions
+  });
+
+  const ctxStirrer = document.getElementById('stirrerChart').getContext('2d');
+  chartStirrer = new Chart(ctxStirrer, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ data: data.trendSpeed, borderColor: '#3b82f6', borderWidth: 2, tension: 0.3 }] },
+    options: commonOptions
+  });
+
+  const ctxLevel = document.getElementById('levelChart').getContext('2d');
+  chartLevel = new Chart(ctxLevel, {
+    type: 'line',
+    data: { 
+      labels: labels, 
+      datasets: [{ 
+        data: data.trendLevel, 
+        borderColor: '#4ade80', 
+        backgroundColor: 'rgba(74, 222, 128, 0.1)',
+        borderWidth: 2, 
+        tension: 0.3,
+        fill: true
+      }] 
+    },
+    options: commonOptions
+  });
+}
+
+/**
+ * Export CSV Functionality (Added for Bulk Tanks)
+ */
+function exportToCSV(type) {
+  if (!currentTankHistory || currentTankHistory.length === 0) return;
+  const data = currentTankHistory[activeBatchIndex];
+  
+  let values = [];
+  let title = "";
+
+  if (type === 'tsc') { values = data.trendTsc; title = "TSC"; }
+  else if (type === 'hz') { values = data.trendSpeed; title = "Stirrer_Speed"; }
+  else if (type === 'level') { values = data.trendLevel; title = "Tank_Level"; }
+
+  // Construct CSV String
+  let csvContent = "Date," + title + "\n";
+  for (let i = 0; i < data.labels.length; i++) {
+    csvContent += `${data.labels[i]},${values[i].toFixed(2)}\n`;
+  }
+
+  // Create Blob & Download Link
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `${data.batch}_${title}_Trend.csv`);
+  document.body.appendChild(link); // Required for Firefox
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Initialize Page
+window.onload = () => {
+  initDropdowns();
+  loadDashboard();
+};
+
+</script>
+</body>
+</html>

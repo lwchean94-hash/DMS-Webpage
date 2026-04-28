@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - Storage Tank Details</title>
+<link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a1628;
+    color: #e8eaf0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .st-gridbg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.7) 100%),
+      url('../Foresight_Background.jpg'); 
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .st-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+    background: rgba(10,22,40,0.9);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .st-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(6, 182, 212, 0.7);
+    cursor: pointer;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .st-back:hover { color: #06b6d4; border-color: rgba(6, 182, 212, 0.5); background: rgba(6, 182, 212, 0.06); }
+  .st-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .st-htitle { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+  .st-htitle span { color: #06b6d4; } /* Cyan accent for Storage */
+
+  /* Navigation Controls */
+  .st-controls {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px 0;
+    max-width: 1700px;
+    margin: 0 auto;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+
+  .control-label { font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 1px; font-weight: 600; }
+  .control-select { background: transparent; border: none; color: #06b6d4; font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; outline: none; cursor: pointer; }
+  .control-select option { background: #0a1628; color: #fff; }
+
+  /* Main Layout */
+  .st-main {
+    position: relative;
+    z-index: 10;
+    padding: 16px 24px 40px;
+    max-width: 1700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    background: rgba(10,22,40,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 16px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #e8eaf0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 8px;
+  }
+
+  /* Tank Visualizer */
+  .tank-visual-container { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; padding: 10px 0; height: 100%;}
+  .tank-body { width: 120px; height: 160px; border: 3px solid rgba(255,255,255,0.3); border-radius: 12px; position: relative; overflow: hidden; background: rgba(0,0,0,0.4); box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+  .tank-liquid { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%); transition: height 1s ease-in-out; box-shadow: 0 -5px 15px rgba(6, 182, 212, 0.3); }
+  .tank-marks { position: absolute; left: -35px; top: 0; bottom: 0; width: 30px; display: flex; flex-direction: column; justify-content: space-between; font-size: 9px; color: rgba(255,255,255,0.5); text-align: right; padding: 10px 0;}
+  .tank-level-text { font-family: 'Rajdhani', sans-serif; font-size: 36px; font-weight: 700; color: #fff; text-align: center;}
+  .tank-level-text span { font-size: 14px; color: rgba(255,255,255,0.5); }
+
+  /* Quality Info Grid */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 100%; align-content: center;}
+  .info-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 6px; padding: 12px 12px; }
+  .info-label { font-size: 9px; text-transform: uppercase; color: #06b6d4; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;}
+  .info-val { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: #fff; }
+  .info-val span { font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'Inter', sans-serif; font-weight: 500;}
+  
+  .box-maturation.ready { border-color: rgba(34, 197, 94, 0.4); background: rgba(34, 197, 94, 0.05); }
+  .box-maturation.ready .info-label { color: #22c55e; }
+  .box-maturation.not-ready { border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.05); }
+  .box-maturation.not-ready .info-label { color: #ef4444; }
+
+  /* Charts */
+  .chart-wrapper { position: relative; height: 160px; width: 100%; margin-top: 5px; }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .chart-title { font-size: 10px; text-transform: uppercase; color: rgba(255,255,255,0.6); letter-spacing: 1px; font-weight: 600; }
+  
+  /* Export Button */
+  .export-btn { display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; color: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.2s; border: 1px solid transparent;}
+  .export-btn:hover { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+  /* Interactive Tables */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; }
+  .data-table th { padding: 8px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600;}
+  .data-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; }
+  .data-table tbody tr { cursor: pointer; transition: all 0.2s; border-left: 2px solid transparent; }
+  .data-table tbody tr:hover { background: rgba(255,255,255,0.04); }
+  .data-table tbody tr.selected-row { background: rgba(6, 182, 212, 0.1); border-left: 2px solid #06b6d4; }
+  
+  /* Badges */
+  .badge { padding: 3px 8px; border-radius: 12px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; text-align: center; display: inline-block;}
+  .b-run { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border-color: rgba(6, 182, 212, 0.3); }
+  .b-comp { background: rgba(34, 197, 94, 0.15); color: #22c55e; border-color: rgba(34, 197, 94, 0.3); }
+  .b-crit { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+  .b-clear { background: transparent; color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.2); }
+
+</style>
+</head>
+<body>
+
+<div class="st-gridbg"></div>
+
+<header class="st-header">
+  <a href="../hartalega_compounding_landing.html" class="st-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Main Dashboard
+  </a>
+  <div class="st-htitle">STORAGE TANK <span>DETAIL DASHBOARD</span></div>
+</header>
+
+<div class="st-controls">
+  <div class="control-group">
+    <span class="control-label">Plant</span>
+    <select class="control-select" id="plantSelect" onchange="updatePlantDropdown()"></select>
+  </div>
+  <div class="control-group">
+    <span class="control-label">Tank</span>
+    <select class="control-select" id="tankSelect" onchange="updateTankSelection()"></select>
+  </div>
+</div>
+
+<main class="st-main">
+  
+  <div style="display: grid; grid-template-columns: 0.8fr 1.2fr 1fr; gap: 20px;">
+    
+    <div class="card" style="align-items: center; justify-content: center; margin: 0;">
+      <div class="card-title" style="width: 100%;">TANK LEVEL</div>
+      <div class="tank-visual-container">
+        <div style="position: relative;">
+          <div class="tank-marks">
+            <span>300</span>
+            <span>150</span>
+            <span>0</span>
+          </div>
+          <div class="tank-body">
+            <div class="tank-liquid" id="tankLiquid" style="height: 0%;"></div>
+          </div>
+        </div>
+        <div class="tank-level-text" id="tankLevelText">0<br><span>cm</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin: 0;">
+      <div class="card-title">QUALITY & INFO</div>
+      <div class="info-grid">
+        <div class="info-box"><div class="info-label">Batch No</div><div class="info-val" id="valBatch">--</div></div>
+        <div class="info-box"><div class="info-label">PO Number</div><div class="info-val" id="valPo">--</div></div>
+        <div class="info-box"><div class="info-label">Latex Type</div><div class="info-val" id="valType">--</div></div>
+        <div class="info-box box-maturation" id="boxMaturation">
+          <div class="info-label">Maturation Hour (>40 Req)</div>
+          <div class="info-val"><span id="valMaturation" style="font-size: 20px; color: #fff; font-family: 'Rajdhani', sans-serif;">--</span> <span>Hr</span></div>
+        </div>
+        <div class="info-box"><div class="info-label">TSC</div><div class="info-val"><span id="valTsc">--</span> <span>%</span></div></div>
+        <div class="info-box"><div class="info-label">Stirrer Speed</div><div class="info-val"><span id="valSpeed">--</span> <span>Hz</span></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin: 0;">
+      <div class="card-title">BATCH STATUS</div>
+      <table class="data-table" id="statusTable">
+        <thead><tr><th>Batch</th><th>PO Number</th><th>Mat. Hr</th><th>TSC</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      
+      <div class="card" style="margin: 0;">
+        <div class="chart-header">
+          <div class="chart-title">PH Trend (Batch Lifespan)</div>
+          <div class="export-btn" onclick="exportToCSV('ph')" title="Export Data to CSV">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </div>
+        </div>
+        <div class="chart-wrapper"><canvas id="phChart"></canvas></div>
+      </div>
+
+      <div class="card" style="margin: 0;">
+        <div class="chart-header">
+          <div class="chart-title">TSC Trend (Batch Lifespan)</div>
+          <div class="export-btn" onclick="exportToCSV('tsc')" title="Export Data to CSV">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </div>
+        </div>
+        <div class="chart-wrapper"><canvas id="tscChart"></canvas></div>
+      </div>
+
+      <div class="card" style="margin: 0;">
+        <div class="chart-header">
+          <div class="chart-title">Level Trend (Batch Lifespan)</div>
+          <div class="export-btn" onclick="exportToCSV('level')" title="Export Data to CSV">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </div>
+        </div>
+        <div class="chart-wrapper"><canvas id="levelChart"></canvas></div>
+      </div>
+
+      <div class="card" style="margin: 0;">
+        <div class="chart-header">
+          <div class="chart-title">Inverter HZ Trend (Batch Lifespan)</div>
+          <div class="export-btn" onclick="exportToCSV('hz')" title="Export Data to CSV">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </div>
+        </div>
+        <div class="chart-wrapper"><canvas id="hzChart"></canvas></div>
+      </div>
+
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <div class="card" style="margin: 0; flex-grow: 1;">
+        <div class="card-title">ALARM LOG</div>
+        <table class="data-table" id="alarmTable">
+          <thead><tr><th>Time</th><th>Code</th><th>Message</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script>
+let chartTsc, chartHz, chartLevel, chartPh;
+let currentTankHistory = []; 
+let activeBatchIndex = 0;
+
+Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const commonOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: {
+    x: { grid: { display: false, drawBorder: false }, ticks: { autoSkip: true, maxTicksLimit: 6 } },
+    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, border: { dash: [4, 4] } }
+  },
+  elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } }
+};
+
+/**
+ * Dropdown Setup Logic
+ */
+function initDropdowns() {
+  const pSelect = document.getElementById('plantSelect');
+  for(let i=1; i<=9; i++) {
+    let opt = document.createElement('option');
+    opt.value = i; opt.innerText = `Plant ${i}`;
+    pSelect.appendChild(opt);
+  }
+}
+
+function updatePlantDropdown() {
+  const pNum = parseInt(document.getElementById('plantSelect').value);
+  const tSelect = document.getElementById('tankSelect');
+  tSelect.innerHTML = '';
+  
+  // Storage tanks are generally ST01 to ST10 per plant
+  for(let i=1; i<=10; i++) {
+    let opt = document.createElement('option');
+    const numStr = String(i).padStart(2, '0');
+    const tankId = `ST${numStr}`;
+    opt.value = tankId; opt.innerText = `ST ${numStr}`;
+    tSelect.appendChild(opt);
+  }
+  
+  updateTankSelection();
+}
+
+function updateTankSelection() {
+  const pNum = document.getElementById('plantSelect').value;
+  const tId = document.getElementById('tankSelect').value;
+  history.replaceState(null, null, `#P${pNum}${tId}`);
+  loadDashboardData(pNum, tId);
+}
+
+/**
+ * Data Generators
+ */
+function generateTankHistory(pNum, tId) {
+  const seed = (parseInt(pNum) * 100) + parseInt(tId.replace(/[^0-9]/g, ''));
+  const random = (min, max) => min + (Math.abs(Math.sin(seed)) * (max - min));
+  const randomInt = (min, max) => Math.floor(random(min, max));
+
+  const types = ["NBR Latex", "Natural Latex", "Synthetic Polymer"];
+  let history = [];
+  let anchorDate = new Date();
+
+  for(let i = 0; i < 3; i++) {
+    const batchSeed = seed + i;
+    const status = i === 0 ? 'RUNNING' : 'COMPLETED';
+    
+    const tscBase = random(16, 19);
+    const phBase = random(9.0, 9.5);
+    const maturation = status === 'RUNNING' ? random(35, 45) : random(45, 72); 
+
+    const startLevel = randomInt(230, 260);
+    const endLevel = status === 'RUNNING' ? randomInt(150, 230) : randomInt(10, 30);
+    const levelDrop = (startLevel - endLevel) / 29;
+
+    let batchLabels = [];
+    for (let j = 29; j >= 0; j--) {
+      let d = new Date(anchorDate);
+      d.setDate(d.getDate() - j);
+      batchLabels.push(d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+    }
+
+    history.push({
+      batch: `ST-2026-${String(batchSeed).padStart(4, '0')}`,
+      po: `PO-${String(881000 + batchSeed)}`,
+      type: types[batchSeed % 3],
+      maturation: maturation.toFixed(1),
+      tsc: tscBase.toFixed(2),
+      ph: phBase.toFixed(2),
+      speed: randomInt(40, 45),
+      level: endLevel,
+      status: status,
+      labels: batchLabels, 
+      
+      trendTsc: Array.from({length: 30}, () => tscBase + (Math.random() * 0.4 - 0.2)),
+      trendPh: Array.from({length: 30}, () => phBase + (Math.random() * 0.1 - 0.05)),
+      trendHz: Array.from({length: 30}, () => randomInt(40, 45)),
+      trendLevel: Array.from({length: 30}, (_, idx) => {
+        let expectedLevel = startLevel - (idx * levelDrop);
+        return Math.max(0, Math.min(300, expectedLevel + randomInt(-2, 2)));
+      })
+    });
+
+    anchorDate.setDate(anchorDate.getDate() - 30 - randomInt(1, 3));
+  }
+  return history;
+}
+
+/**
+ * Core Initialization 
+ */
+function loadDashboard() {
+  initDropdowns();
+  
+  const hash = window.location.hash.toUpperCase();
+  let pNum = 1;
+  let tId = 'ST01';
+
+  if (hash && hash.startsWith('#P')) {
+    const match = hash.match(/#P(\d+)(ST\d+)/);
+    if (match) {
+      pNum = parseInt(match[1]);
+      tId = match[2];
+    }
+  }
+
+  document.getElementById('plantSelect').value = pNum;
+  
+  const tSelect = document.getElementById('tankSelect');
+  tSelect.innerHTML = '';
+  for(let i=1; i<=10; i++) {
+    let opt = document.createElement('option');
+    const numStr = String(i).padStart(2, '0');
+    opt.value = `ST${numStr}`; opt.innerText = `ST ${numStr}`;
+    tSelect.appendChild(opt);
+  }
+  
+  if (Array.from(tSelect.options).some(opt => opt.value === tId)) {
+    tSelect.value = tId;
+  } else {
+    tId = tSelect.options[0].value;
+    history.replaceState(null, null, `#P${pNum}${tId}`);
+  }
+
+  loadDashboardData(pNum, tId);
+}
+
+function loadDashboardData(pNum, tId) {
+  currentTankHistory = generateTankHistory(pNum, tId);
+  populateStatusTable(currentTankHistory);
+  populateAlarmTable(tId);
+  selectBatch(0); 
+}
+
+/**
+ * Table & UI Population
+ */
+function populateStatusTable(historyArray) {
+  const tbody = document.querySelector('#statusTable tbody');
+  let html = '';
+  
+  historyArray.forEach((b, index) => {
+    const badgeClass = b.status === 'RUNNING' ? 'b-run' : 'b-comp';
+    html += `
+      <tr id="batch-row-${index}" onclick="selectBatch(${index})">
+        <td>${b.batch}</td><td>${b.po}</td><td>${b.maturation}</td>
+        <td>${b.tsc}%</td><td><span class="badge ${badgeClass}">${b.status}</span></td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
+
+function selectBatch(index) {
+  activeBatchIndex = index;
+  const selectedData = currentTankHistory[index];
+
+  const rows = document.querySelectorAll('#statusTable tbody tr');
+  rows.forEach((row, i) => {
+    if (i === index) row.classList.add('selected-row');
+    else row.classList.remove('selected-row');
+  });
+
+  document.getElementById('valBatch').innerText = selectedData.batch;
+  document.getElementById('valPo').innerText = selectedData.po;
+  document.getElementById('valType').innerText = selectedData.type;
+  document.getElementById('valTsc').innerText = selectedData.tsc;
+  document.getElementById('valSpeed').innerText = selectedData.speed;
+  document.getElementById('valMaturation').innerText = selectedData.maturation;
+
+  const matBox = document.getElementById('boxMaturation');
+  if (parseFloat(selectedData.maturation) >= 40) {
+    matBox.classList.add('ready');
+    matBox.classList.remove('not-ready');
+  } else {
+    matBox.classList.add('not-ready');
+    matBox.classList.remove('ready');
+  }
+
+  const pct = (selectedData.level / 300) * 100;
+  document.getElementById('tankLiquid').style.height = `${Math.min(pct, 100)}%`;
+  document.getElementById('tankLevelText').innerHTML = `${selectedData.level}<br><span>cm</span>`;
+
+  drawCharts(selectedData);
+}
+
+function populateAlarmTable(tId) {
+  const tbody = document.querySelector('#alarmTable tbody');
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  if (Math.random() > 0.6) {
+    tbody.innerHTML = `<tr>
+      <td>${timeStr}</td><td>TMP-HI</td><td>Temperature High Warning</td><td><span class="badge b-crit">ACTIVE</span></td>
+    </tr>`;
+  } else {
+    tbody.innerHTML = `<tr>
+      <td>${timeStr}</td><td>STABLE</td><td>No abnormal condition detected</td><td><span class="badge b-clear">CLEAR</span></td>
+    </tr>`;
+  }
+}
+
+/**
+ * Chart Drawing Logic
+ */
+function drawCharts(data) {
+  const labels = data.labels; 
+
+  if(chartTsc) chartTsc.destroy();
+  if(chartHz) chartHz.destroy();
+  if(chartLevel) chartLevel.destroy();
+  if(chartPh) chartPh.destroy();
+
+  const ctxTsc = document.getElementById('tscChart').getContext('2d');
+  chartTsc = new Chart(ctxTsc, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ data: data.trendTsc, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 }] },
+    options: commonOptions
+  });
+
+  const ctxHz = document.getElementById('hzChart').getContext('2d');
+  chartHz = new Chart(ctxHz, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ data: data.trendHz, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 }] },
+    options: commonOptions
+  });
+
+  const ctxLevel = document.getElementById('levelChart').getContext('2d');
+  chartLevel = new Chart(ctxLevel, {
+    type: 'line',
+    data: { 
+      labels: labels, 
+      datasets: [{ data: data.trendLevel, borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.1)', borderWidth: 2, tension: 0.3, fill: true }] 
+    },
+    options: commonOptions
+  });
+
+  const ctxPh = document.getElementById('phChart').getContext('2d');
+  chartPh = new Chart(ctxPh, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ data: data.trendPh, borderColor: '#0891b2', borderWidth: 2, tension: 0.3 }] },
+    options: commonOptions
+  });
+}
+
+/**
+ * Export CSV Functionality
+ */
+function exportToCSV(type) {
+  if (!currentTankHistory || currentTankHistory.length === 0) return;
+  const data = currentTankHistory[activeBatchIndex];
+  
+  let values = [];
+  let title = "";
+
+  if (type === 'tsc') { values = data.trendTsc; title = "TSC"; }
+  else if (type === 'hz') { values = data.trendHz; title = "Stirrer_Speed"; }
+  else if (type === 'level') { values = data.trendLevel; title = "Tank_Level"; }
+  else if (type === 'ph') { values = data.trendPh; title = "PH"; }
+
+  let csvContent = "Date," + title + "\n";
+  for (let i = 0; i < data.labels.length; i++) {
+    csvContent += `${data.labels[i]},${values[i].toFixed(2)}\n`;
+  }
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `${data.batch}_${title}_Trend.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Initial Load
+window.onload = loadDashboard;
+
+</script>
+</body>
+</html>

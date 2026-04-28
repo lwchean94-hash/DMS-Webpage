@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hartalega Foresight - Process Detailed Dashboard</title>
+<title>Hartalega Foresight - Production Detailed Dashboard</title>
 <link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png?v=2">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -41,11 +41,33 @@
   .l-top-banner {
     position: relative;
     z-index: 20;
-    text-align: center;
-    padding: 24px 32px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 32px 20px;
     background: linear-gradient(180deg, rgba(10,22,40,0.95) 0%, rgba(10,22,40,0.8) 100%);
-    border-bottom: 1px solid rgba(255,190,0,0.05);
+    border-bottom: 1px solid rgba(255,190,0,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
+
+  .l-top-banner .l-back {
+    position: absolute;
+    left: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255,190,0,0.7);
+    cursor: pointer;
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.18s;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .l-top-banner .l-back:hover { color: #FFBE00; border-color: rgba(255,190,0,0.5); background: rgba(255,190,0,0.06); }
+  .l-top-banner .l-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
 
   .l-main-title {
     font-family: 'Rajdhani', sans-serif;
@@ -58,94 +80,79 @@
   }
   .l-main-title span { color: #FFBE00; }
 
-  /* Control Bar (Moved below Header) */
+  /* Control Bar */
   .l-control-bar {
     position: relative;
-    z-index: 20;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 32px;
-    background: rgba(10,22,40,0.9);
-    border-bottom: 1px solid rgba(255,190,0,0.15);
-    backdrop-filter: blur(10px);
+    padding: 20px 32px 10px;
+    background: transparent;
+    max-width: 1600px;
+    margin: 0 auto;
   }
 
   .l-header-left, .l-header-right { display: flex; align-items: center; gap: 24px; }
-
-  .l-back {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: rgba(255,190,0,0.7);
-    cursor: pointer;
-    border: 1px solid rgba(255,190,0,0.2);
-    padding: 6px 14px;
-    border-radius: 6px;
-    transition: all 0.18s;
-    text-decoration: none;
-  }
-  .l-back:hover { color: #FFBE00; border-color: rgba(255,190,0,0.5); background: rgba(255,190,0,0.06); }
-  .l-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
 
   /* Dropdowns */
   .l-selector-group {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: rgba(0,0,0,0.2);
-    padding: 4px 12px;
+    background: rgba(255,255,255,0.03);
+    padding: 6px 16px;
     border-radius: 8px;
-    border: 1px solid rgba(255,190,0,0.1);
+    border: 1px solid rgba(255,190,0,0.15);
   }
 
   .l-select {
     background: transparent;
     color: #FFBE00;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 4px;
+    padding: 2px;
   }
   .l-select option { background: #0a1628; color: #e8eaf0; font-family: 'Inter', sans-serif; font-size: 14px;}
 
   .l-divider { color: rgba(200,210,230,0.3); }
 
+  /* Custom Date Pickers (Dates Only) */
   .l-date-selector {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     font-size: 13px;
     color: rgba(200,210,230,0.7);
+    background: rgba(255,255,255,0.03);
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,190,0,0.15);
   }
 
-  .l-date-select {
-    background: rgba(255,190,0,0.05);
+  .l-date-input {
+    background: transparent;
     color: #FFBE00;
-    border: 1px solid rgba(255,190,0,0.2);
-    padding: 6px 12px;
-    border-radius: 6px;
+    border: none;
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 500;
     outline: none;
     cursor: pointer;
+    color-scheme: dark;
   }
-  /* FIXED: Ensure options don't blend into the background */
-  .l-date-select option {
-    background: #0a1628;
-    color: #e8eaf0;
-  }
+  
+  .l-date-input:focus { border: none; outline: none; }
 
   /* Main Content */
   .l-main {
     position: relative;
     z-index: 10;
-    padding: 24px 32px 48px;
+    padding: 16px 32px 48px;
     max-width: 1600px;
     margin: 0 auto;
   }
@@ -277,16 +284,15 @@
   <div class="l-gridbg"></div>
 
   <div class="l-top-banner">
+    <a href="../hartalega_production_landing.html" class="l-back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Overview
+    </a>
     <h1 class="l-main-title">Production <span>Detailed</span> Dashboard</h1>
   </div>
 
-  <header class="l-control-bar">
+  <div class="l-control-bar">
     <div class="l-header-left">
-      <a href="../hartalega_production_landing.html" class="l-back">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-        Overview
-      </a>
-      
       <div class="l-selector-group">
         <select class="l-select" id="plantSelect" onchange="handleNavigationChange()"></select>
         <span class="l-divider">/</span>
@@ -296,16 +302,13 @@
     
     <div class="l-header-right">
       <div class="l-date-selector">
-        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <select class="l-date-select" id="durationSelect" onchange="updateChartsTimeframe()">
-          <option value="6">Last 6 Hours</option>
-          <option value="12">Last 12 Hours</option>
-          <option value="24" selected>Last 24 Hours</option>
-          <option value="168">Last 7 Days</option>
-        </select>
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="#FFBE00" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <input type="date" class="l-date-input" id="startDateTime" onchange="updateChartsTimeframe()">
+        <span class="l-divider">to</span>
+        <input type="date" class="l-date-input" id="endDateTime" onchange="updateChartsTimeframe()">
       </div>
     </div>
-  </header>
+  </div>
 
   <main class="l-main">
     
@@ -328,24 +331,19 @@
       <button class="l-tab" onclick="switchTab('postprocess')">Post-Process</button>
     </div>
 
-    <div id="panel-cleaning" class="l-panel active">
-      <div id="cleaningChartsContainer"></div>
-    </div>
-
-    <div id="panel-coagulant" class="l-panel">
-      <div id="coagulantChartsContainer"></div>
-    </div>
-
-    <div id="panel-oven" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
-    <div id="panel-leaching" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
-    <div id="panel-postcuring" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
+    <div id="panel-cleaning" class="l-panel active"><div id="cleaningChartsContainer"></div></div>
+    <div id="panel-coagulant" class="l-panel"><div id="coagulantChartsContainer"></div></div>
+    <div id="panel-oven" class="l-panel"><div id="ovenChartsContainer"></div></div>
+    <div id="panel-leaching" class="l-panel"><div id="leachingChartsContainer"></div></div>
+    <div id="panel-postcuring" class="l-panel"><div id="postcuringChartsContainer"></div></div>
+    
     <div id="panel-postprocess" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
 
   </main>
 </div>
 
 <script>
-// --- 1. PLANT & LINE NAVIGATION LOGIC ---
+// --- 1. PLANT, LINE, & DATE INITIALIZATION ---
 const config = { plants: 9, linesPerPlant: 12 };
 
 function initSelectors() {
@@ -361,7 +359,16 @@ function initSelectors() {
   
   pSelect.value = pNum;
   populateLines(pNum, lNum);
-  document.title = `Hartalega Foresight - P${pNum} L${lNum} Trends`;
+
+  // Initialize Date selectors (Default to last 3 days to show good trends)
+  const now = new Date();
+  const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000));
+  
+  const pad = (n) => n.toString().padStart(2, '0');
+  const formatD = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  
+  document.getElementById('endDateTime').value = formatD(now);
+  document.getElementById('startDateTime').value = formatD(threeDaysAgo);
 }
 
 function populateLines(plantNum, selectLine) {
@@ -379,7 +386,7 @@ function handleNavigationChange() {
   const lSelect = document.getElementById('lineSelect');
   if(event.target.id === 'plantSelect') populateLines(pSelect.value);
   window.history.pushState(null, null, `#P${pSelect.value}L${lSelect.value}`);
-  document.title = `Hartalega Foresight - P${pSelect.value} L${lSelect.value} Trends`;
+  
   fetchProduct();
   renderAllCharts();
 }
@@ -425,7 +432,7 @@ function toggleTank(element) {
 // --- 5. CHARTS CONFIGURATION & RENDERING ---
 const chartInstances = [];
 
-// Raw parameter lists
+// Fully populated process parameters
 const processData = {
   cleaning: {
     "Acid Tank": ["CAA Acid Flow Rate (L/hr)", "Acid Strength (%)", "Temp (°C)"],
@@ -441,29 +448,72 @@ const processData = {
   coagulant: {
     "Coagulant Tank": ["Temperature (°C)", "Coagulant Level (mm)", "Coagulant pH", "CN Strength (%)", "PFCA Concentration (%)", "Pump Speed (Hz)", "Stirrer Speed (Hz)"],
     "Latex Tank": ["Temperature (°C)", "Latex Level (mm)", "Latex pH", "TSC (%)", "Stirrer Speed (Hz)"]
+  },
+  oven: {
+    "B-Oven": ["Temperature (°C)"],
+    "C-Oven": ["Temperature (°C)"],
+    "Main Oven": ["Zone 1 Temperature (°C)", "Zone 2 Temperature (°C)", "Zone 3 Temperature (°C)", "Zone 4 Temperature (°C)", "Zone 5 Temperature (°C)", "Zone 1 Exhaust (Hz)", "Zone 2 Exhaust (Hz)", "Zone 3 Exhaust (Hz)", "Zone 4 Exhaust (Hz)"],
+    "D-Oven": ["Temperature (°C)"]
+  },
+  leaching: {
+    "Pre-leach 1": ["Temperature (°C)"],
+    "Pre-leach 2": ["Temperature (°C)"],
+    "Pre-leach 3": ["Temperature (°C)"],
+    "Pre-leach 4": ["Temperature (°C)"],
+    "Pre-leach 5": ["Temperature (°C)"],
+    "Pre-leach 6": ["Temperature (°C)"],
+    "Beading": ["RT Status (On/Off)", "RB Status (On/Off)", "LT Status (On/Off)", "LB Status (On/Off)"]
+  },
+  postcuring: {
+    "Cooling 1": ["Temperature (°C)"],
+    "Cooling 2": ["Temperature (°C)"],
+    "Cooling 3": ["Temperature (°C)"],
+    "Chlorine": ["Temperature (°C)", "Concentration (ppm)"],
+    "Soak": ["Raw Water Flow Rate (L/hr)", "Level (mm)", "pH"],
+    "Neutralizer": ["pH"],
+    "Rinse 1": ["Temperature (°C)"],
+    "Rinse 2": ["Temperature (°C)"],
+    "Rinse 3": ["Temperature (°C)", "pH"],
+    "Rinse 4": ["Temperature (°C)", "pH"],
+    "Coating": ["Temperature (°C)", "pH", "Level (mm)"]
   }
 };
 
-const chartColors = ['#FFBE00', '#22c55e', '#3b82f6', '#f43f5e', '#a855f7', '#06b6d4'];
+const chartColors = ['#FFBE00', '#22c55e', '#3b82f6', '#f43f5e', '#a855f7', '#06b6d4', '#f97316', '#14b8a6', '#ec4899'];
 
 // Helper to determine group name & data ranges based on units
 function getUnitInfo(paramName) {
   if (paramName.includes('(L/hr)')) return { unit: "Flow Rate (L/hr)", min: 1200, max: 2500, step: false };
   if (paramName.includes('(%)')) return { unit: "Concentration (%)", min: 1, max: 15, step: false };
-  if (paramName.includes('(°C)') || paramName.includes('Temp')) return { unit: "Temperature (°C)", min: 45, max: 80, step: false };
+  if (paramName.includes('(ppm)')) return { unit: "Concentration (ppm)", min: 150, max: 400, step: false };
+  if (paramName.includes('(°C)') || paramName.includes('Temp')) return { unit: "Temperature (°C)", min: 45, max: 120, step: false };
   if (paramName.includes('pH')) return { unit: "pH Level", min: 4, max: 10, step: false };
   if (paramName.includes('(mm)')) return { unit: "Tank Level (mm)", min: 600, max: 950, step: false };
   if (paramName.includes('(Hz)')) return { unit: "Motor Speed (Hz)", min: 30, max: 60, step: false };
-  if (paramName.includes('(On/Off)')) return { unit: "Equipment Status", min: 0, max: 1, step: true };
+  if (paramName.includes('Status') || paramName.includes('(On/Off)')) return { unit: "Equipment Status", min: 0, max: 1, step: true };
   return { unit: "Measurement", min: 10, max: 100, step: false };
 }
 
-function generateMockData(hours, count, min, max, isStep) {
+// Generates points across the full date range
+function generateMockData(startDt, endDt, count, min, max, isStep) {
   const data = [], labels = [];
-  const now = new Date();
-  for(let i=count; i>=0; i--) {
-    let d = new Date(now.getTime() - (i * (hours/count) * 60 * 60 * 1000));
-    labels.push(d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+  const startTime = startDt.getTime();
+  const endTime = endDt.getTime();
+  const timeStep = (endTime - startTime) / count;
+  const diffDays = (endTime - startTime) / (1000 * 3600 * 24);
+
+  const pad = (n) => n.toString().padStart(2, '0');
+
+  for(let i=0; i<=count; i++) {
+    let d = new Date(startTime + (i * timeStep));
+    
+    // Formatting: If range is more than 1 day, include Month/Day in the label
+    let labelStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    if (diffDays > 1.5) {
+      labelStr = `${pad(d.getMonth()+1)}/${pad(d.getDate())} ` + labelStr;
+    }
+    labels.push(labelStr);
+
     if (isStep) {
       data.push(Math.random() > 0.15 ? 1 : 0); // Mostly ON
     } else {
@@ -478,8 +528,15 @@ function buildChartsForSection(sectionKey, containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   const sections = processData[sectionKey];
-  const hours = parseInt(document.getElementById('durationSelect').value);
-  const dataPoints = hours > 24 ? 40 : 20; 
+  
+  // Calculate Timeframe based on selected Date (adds T00:00:00 and T23:59:59 to cover full days)
+  const startVal = document.getElementById('startDateTime').value;
+  const endVal = document.getElementById('endDateTime').value;
+  const startDate = startVal ? new Date(startVal + "T00:00:00") : new Date(new Date().getTime() - 24*3600*1000);
+  const endDate = endVal ? new Date(endVal + "T23:59:59") : new Date();
+  
+  const diffDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+  const dataPoints = diffDays > 3 ? 40 : 24; // Smooth lines with plenty of points per day
 
   Chart.defaults.color = 'rgba(200,210,230,0.6)';
   Chart.defaults.font.family = 'Inter';
@@ -489,7 +546,6 @@ function buildChartsForSection(sectionKey, containerId) {
   Object.keys(sections).forEach((tankName) => {
     const allParams = sections[tankName];
     
-    // Group parameters by their type/unit
     const groupedParams = {};
     allParams.forEach(param => {
       const info = getUnitInfo(param);
@@ -497,11 +553,9 @@ function buildChartsForSection(sectionKey, containerId) {
       groupedParams[info.unit].params.push(param);
     });
 
-    // Create Tank Accordion HTML
     const tankDiv = document.createElement('div');
     tankDiv.className = 'l-tank-group';
     
-    // Accordion Header
     const headerHtml = `
       <div class="l-tank-header" onclick="toggleTank(this)">
         <div class="l-tank-title">${tankName}</div>
@@ -512,7 +566,6 @@ function buildChartsForSection(sectionKey, containerId) {
     tankDiv.innerHTML = headerHtml;
     const contentDiv = tankDiv.querySelector('.l-tank-content');
 
-    // Create Charts for each Grouped Unit inside the tank
     Object.keys(groupedParams).forEach((unitKey) => {
       const groupData = groupedParams[unitKey];
       
@@ -520,7 +573,7 @@ function buildChartsForSection(sectionKey, containerId) {
       chartWrapper.className = 'l-chart-card';
       chartWrapper.innerHTML = `
         <div class="l-chart-title">${unitKey}</div>
-        <div class="l-chart-wrapper"><canvas id="chart-${chartIndex}"></canvas></div>
+        <div class="l-chart-wrapper"><canvas id="chart-${sectionKey}-${chartIndex}"></canvas></div>
       `;
       contentDiv.appendChild(chartWrapper);
 
@@ -528,11 +581,11 @@ function buildChartsForSection(sectionKey, containerId) {
       let commonLabels = [];
 
       groupData.params.forEach((paramName, pIdx) => {
-        const mock = generateMockData(hours, dataPoints, groupData.info.min, groupData.info.max, groupData.info.step);
+        const mock = generateMockData(startDate, endDate, dataPoints, groupData.info.min, groupData.info.max, groupData.info.step);
         if(pIdx === 0) commonLabels = mock.labels;
         
         datasets.push({
-          label: paramName.replace(/\s*\(.*?\)\s*/g, ''), // Clean name for legend
+          label: paramName.replace(/\s*\(.*?\)\s*/g, ''), 
           data: mock.data,
           borderColor: chartColors[pIdx % chartColors.length],
           backgroundColor: chartColors[pIdx % chartColors.length] + '20',
@@ -540,14 +593,13 @@ function buildChartsForSection(sectionKey, containerId) {
           pointRadius: 0,
           tension: groupData.info.step ? 0 : 0.4,
           stepped: groupData.info.step ? true : false,
-          fill: groupData.info.step ? true : false // Fill under status charts for visibility
+          fill: groupData.info.step ? true : false
         });
       });
 
-      // We use a timeout to ensure the canvas is in the DOM before rendering
       const currentChartIndex = chartIndex;
       setTimeout(() => {
-        const ctx = document.getElementById(`chart-${currentChartIndex}`).getContext('2d');
+        const ctx = document.getElementById(`chart-${sectionKey}-${currentChartIndex}`).getContext('2d');
         const newChart = new Chart(ctx, {
           type: 'line',
           data: { labels: commonLabels, datasets: datasets },
@@ -564,7 +616,13 @@ function buildChartsForSection(sectionKey, containerId) {
                 grid: { color: 'rgba(255,255,255,0.05)' }, 
                 beginAtZero: groupData.info.step,
                 max: groupData.info.step ? 1.2 : undefined,
-                ticks: { stepSize: groupData.info.step ? 1 : undefined }
+                ticks: { 
+                  stepSize: groupData.info.step ? 1 : undefined,
+                  callback: function(value) {
+                     if(groupData.info.step) return value === 1 ? 'ON' : (value === 0 ? 'OFF' : '');
+                     return value;
+                  }
+                }
               },
               x: { grid: { display: false } }
             }
@@ -583,11 +641,23 @@ function buildChartsForSection(sectionKey, containerId) {
 function renderAllCharts() {
   chartInstances.forEach(chart => chart.destroy());
   chartInstances.length = 0;
+  
   buildChartsForSection('cleaning', 'cleaningChartsContainer');
   buildChartsForSection('coagulant', 'coagulantChartsContainer');
+  buildChartsForSection('oven', 'ovenChartsContainer');
+  buildChartsForSection('leaching', 'leachingChartsContainer');
+  buildChartsForSection('postcuring', 'postcuringChartsContainer');
 }
 
-function updateChartsTimeframe() { renderAllCharts(); }
+function updateChartsTimeframe() { 
+  const startObj = document.getElementById('startDateTime');
+  const endObj = document.getElementById('endDateTime');
+  // Prevent end date from being earlier than start date
+  if (new Date(startObj.value) > new Date(endObj.value)) {
+    endObj.value = startObj.value;
+  }
+  renderAllCharts(); 
+}
 
 window.onload = () => {
   initSelectors();

@@ -386,9 +386,9 @@ function renderLines(p) {
       <div class="ln">L${ex.num}</div>
       <div class="lb">${ex.label}</div>
     `;
-    btn.onclick = () => {
+   btn.onclick = () => {
       // Updates using Hash instead of separate files
-      window.location.href = `production_details/hartalega_production_line_landing.html#P${p.num}L${ex.num}`;
+      window.location.href = `production_details/hartalega_production_line_details.html#P${p.num}L${i}`;
     };
     grid.appendChild(btn);
   });

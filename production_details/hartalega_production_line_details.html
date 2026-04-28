@@ -342,7 +342,7 @@
 
 <script>
 // --- 1. INITIALIZATION & STATE MEMORY ---
-const config = { plants: 9, linesPerPlant: 12 };
+const config = { plants: 9 };
 
 // Memory State: Remembers which tank accordions are open so they don't minimize when changing dates
 const expandedTanks = new Set(); 
@@ -367,14 +367,41 @@ function initSelectors() {
   document.getElementById('startDateTime').value = formatD(threeDaysAgo);
 }
 
+// CUSTOMIZED LINE ALLOCATION PER PLANT
 function populateLines(plantNum, selectLine) {
   const lSelect = document.getElementById('lineSelect');
   lSelect.innerHTML = '';
-  const start = ((plantNum - 1) * config.linesPerPlant) + 1;
-  const end = start + config.linesPerPlant - 1;
-  for(let i=start; i<=end; i++) lSelect.options.add(new Option(`LINE ${i}`, i));
-  if(plantNum == 8) lSelect.options.add(new Option(`LINE 105 (RND)`, 105));
-  if(selectLine) lSelect.value = selectLine;
+  
+  let pNum = parseInt(plantNum);
+  let start, end;
+  
+  if (pNum <= 6) {
+    // Standard allocation for Plants 1 to 6 (12 lines each)
+    start = ((pNum - 1) * 12) + 1;
+    end = start + 11;
+  } else if (pNum === 7) {
+    start = 73;
+    end = 82;
+  } else if (pNum === 8) {
+    start = 83;
+    end = 92;
+  } else if (pNum === 9) {
+    start = 93;
+    end = 104;
+  }
+  
+  for(let i=start; i<=end; i++) {
+    lSelect.options.add(new Option(`LINE ${i}`, i));
+  }
+  
+  // Custom appending for Plant 8
+  if(pNum === 8) {
+    lSelect.options.add(new Option(`LINE 105 (RND)`, 105));
+  }
+  
+  if(selectLine) {
+    lSelect.value = selectLine;
+  }
 }
 
 function handleNavigationChange() {

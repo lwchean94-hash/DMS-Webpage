@@ -368,7 +368,7 @@ function renderLines(p) {
     `;
     btn.onclick = () => {
       // Updates using Hash instead of separate files
-      window.location.href = `production_details/hartalega_production_line_landing.html#P${p.num}L${i}`;
+      window.location.href = `production_details/hartalega_production_line_details.html#P${p.num}L${i}`;
     };
     grid.appendChild(btn);
   }
@@ -397,6 +397,28 @@ function renderLines(p) {
 // Initialize on page load
 renderPlants();
 </script>
-
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Get the hash from the URL (e.g., "#P2L24")
+    const hash = window.location.hash;
+    
+    // 2. Extract Plant and Line numbers using a regular expression
+    const match = hash.match(/#P(\d+)L(\d+)/);
+    
+    if (match && match[1] && match[2]) {
+      const plantNum = match[1];
+      const lineNum = match[2];
+      
+      // 3. Update the browser tab title
+      document.title = `Hartalega Foresight - P${plantNum} L${lineNum} Dashboard`;
+      
+      // 4. Update the main header text
+      const headerTitle = document.querySelector('.l-htitle-text');
+      if (headerTitle) {
+        headerTitle.innerHTML = `PLANT ${plantNum} <span>· LINE ${lineNum}</span>`;
+      }
+    }
+  });
+</script>
 </body>
 </html>

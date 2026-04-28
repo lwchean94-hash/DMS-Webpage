@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - QA Portal</title>
+<link rel="icon" type="image/png" href="Hartalega_Foresight_Logo.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .qa-page {
+    font-family: 'Inter', sans-serif;
+    background: #0a1628;
+    min-height: 100vh;
+    color: #e8eaf0;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .qa-gridbg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.65) 100%),
+      url('Foresight_Background.jpg');
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    background-repeat: repeat, repeat, no-repeat, no-repeat;
+    background-attachment: fixed;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .qa-glow {
+    position: absolute;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(255,190,0,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .qa-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid rgba(255,190,0,0.15);
+    background: rgba(10,22,40,0.9);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .qa-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255,190,0,0.7);
+    cursor: pointer;
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+
+  .qa-back:hover {
+    color: #FFBE00;
+    border-color: rgba(255,190,0,0.5);
+    background: rgba(255,190,0,0.06);
+  }
+
+  .qa-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .qa-htitle {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e8eaf0;
+    letter-spacing: 1px;
+  }
+  .qa-htitle span { color: #FFBE00; }
+
+  .qa-hright { font-size: 12px; color: rgba(200,210,230,0.6); display: flex; align-items: center;}
+  
+  .qa-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* Main Content Layout */
+  .qa-main {
+    position: relative;
+    z-index: 10;
+    padding: 48px 32px 60px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .qa-hero {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .qa-hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #FFBE00;
+    border: 1px solid rgba(255,190,0,0.3);
+    padding: 4px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    background: rgba(255,190,0,0.05);
+  }
+
+  .qa-hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .qa-hero h1 span { color: #FFBE00; }
+
+  .qa-hero p {
+    font-size: 14px;
+    color: rgba(200,210,230,0.5);
+    margin-top: 12px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* 2-Column Grid for QA Options */
+  .qa-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .qa-module-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,190,0,0.15);
+    border-radius: 12px;
+    padding: 36px 32px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+    min-height: 240px;
+  }
+
+  .qa-module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: transparent;
+    transition: background 0.25s;
+  }
+
+  .qa-module-card:hover {
+    background: rgba(255,190,0,0.05);
+    border-color: rgba(255,190,0,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .qa-module-card:hover::before { background: #FFBE00; }
+
+  .qa-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,190,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    transition: all 0.2s;
+  }
+
+  .qa-icon svg { width: 28px; height: 28px; stroke: #FFBE00; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s;}
+
+  .qa-module-card:hover .qa-icon {
+    background: rgba(255,190,0,0.1);
+    border-color: rgba(255,190,0,0.4);
+  }
+
+  .qa-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #e8eaf0;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .qa-desc {
+    font-size: 14px;
+    color: rgba(200,210,230,0.45);
+    line-height: 1.6;
+    flex-grow: 1;
+  }
+
+  .qa-arrow {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,190,0,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.25s;
+  }
+
+  .qa-module-card:hover .qa-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: #FFBE00;
+  }
+
+  .qa-arrow svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .qa-footer {
+    position: relative;
+    text-align: center;
+    padding: 24px 32px 32px;
+    font-size: 11px;
+    color: rgba(200,210,230,0.25);
+    letter-spacing: 0.5px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="qa-page">
+  <div class="qa-gridbg"></div>
+  <div class="qa-glow"></div>
+
+  <header class="qa-header">
+    <a href="hartalega_foresight_landing_page.html" class="qa-back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Main portal
+    </a>
+    
+    <div class="qa-htitle">
+      HARTALEGA <span>FORESIGHT</span>
+    </div>
+    
+    <div class="qa-hright">
+      <span class="qa-dot"></span> QA Network Connected
+    </div>
+  </header>
+
+  <main class="qa-main">
+    
+    <div class="qa-hero">
+      <div class="qa-hero-tag">Quality Assurance Division</div>
+      <h1>QA <span>Portal</span></h1>
+      <p>Select an area below to access quality control databases, compliance documents, and product limit specifications.</p>
+    </div>
+
+    <div class="qa-modules-grid">
+
+      <a href="./qa_details/hartalega_product_control_limit_db.html" class="qa-module-card">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
+        <div class="qa-title">Product Control Limit Database</div>
+        <div class="qa-desc">Access and manage threshold parameters, tolerance limits, and acceptable quality levels (AQL) across all glove variants and production runs.</div>
+        <div class="qa-arrow">Access Database <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+      <a href="#" class="qa-module-card">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="qa-title">Control Plan &amp; Documents</div>
+        <div class="qa-desc">View and update standard operating procedures (SOPs), process control plans, and regulatory compliance documentation for facility auditing.</div>
+        <div class="qa-arrow">View Documents <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </a>
+
+    </div>
+  </main>
+  
+  <footer class="qa-footer">
+    Hartalega Foresight IoT Platform &nbsp;·&nbsp; Quality Assurance Division &nbsp;·&nbsp; Confidential
+  </footer>
+</div>
+
+</body>
+</html>

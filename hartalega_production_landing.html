@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - Production</title>
+<link rel="icon" type="image/png" href="Hartalega_Foresight_Logo.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Set background on HTML to prevent white flashes during scale */
+  html {
+    background: #0a1628;
+    overflow-x: hidden;
+  }
+
+  /* BULLETPROOF 80% SCALE METHOD */
+  body {
+    font-family: 'Inter', sans-serif;
+    color: #e8eaf0;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    
+    /* Mathematical 80% Zoom (100 / 0.8 = 125) */
+    width: 125%;
+    min-height: 125vh;
+    transform: scale(0.8);
+    transform-origin: top left;
+  }
+
+  .p-page {
+    position: relative;
+    min-height: 100vh;
+  }
+  
+  /* Upgraded Background with Image and Vignette */
+  .p-gridbg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.65) 100%),
+      url('Foresight_Background.jpg'); 
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Added z-index: 10 to keep content above background */
+  .p-header { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid rgba(255,190,0,0.15); background: rgba(10,22,40,0.9); }
+  .p-back { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,190,0,0.7); cursor: pointer; border: 1px solid rgba(255,190,0,0.2); padding: 6px 14px; border-radius: 6px; transition: all 0.18s; text-decoration: none; }
+  .p-back:hover { color: #FFBE00; border-color: rgba(255,190,0,0.5); background: rgba(255,190,0,0.06); }
+  .p-back svg { width: 14px; height: 14px; stroke: #FFBE00; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .p-htitle { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: #FFBE00; letter-spacing: 1px; }
+  .p-hright { font-size: 12px; color: rgba(200,210,230,0.45); letter-spacing: 0.5px; }
+  .p-dot { display: inline-block; width: 6px; height: 6px; background: #22c55e; border-radius: 50%; margin-right: 5px; animation: blink 2s infinite; }
+  
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  
+  .p-hero { position: relative; z-index: 10; padding: 32px 32px 20px; text-align: center; }
+  .p-tag { display: inline-block; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #FFBE00; border: 1px solid rgba(255,190,0,0.25); padding: 4px 14px; border-radius: 20px; margin-bottom: 12px; background: rgba(255,190,0,0.05); }
+  .p-hero h1 { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight: 700; color: #fff; letter-spacing: 1.5px; text-transform: uppercase; }
+  .p-hero h1 span { color: #FFBE00; }
+  .p-hero p { font-size: 13px; color: rgba(200,210,230,0.5); margin-top: 8px; max-width: 600px; margin-left: auto; margin-right: auto; }
+  .p-divider { width: 50px; height: 2px; background: rgba(255,190,0,0.4); margin: 14px auto 0; }
+  
+  .p-body { position: relative; z-index: 10; padding: 24px 32px 40px; }
+  .p-step-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,190,0,0.45); margin-bottom: 16px; text-align: center; }
+  
+  /* --- Main Category Grid Styles --- */
+  .p-category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 900px; margin: 0 auto 32px; }
+  .p-category-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,190,0,0.15); border-radius: 12px; padding: 28px 24px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; text-decoration: none;}
+  .p-category-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background 0.25s; }
+  .p-category-card:hover { background: rgba(255,190,0,0.05); border-color: rgba(255,190,0,0.4); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .p-category-card:hover::before { background: #FFBE00; }
+  .p-category-icon { width: 48px; height: 48px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,190,0,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; transition: all 0.2s; }
+  .p-category-icon svg { width: 24px; height: 24px; stroke: #FFBE00; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .p-category-title { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 600; color: #e8eaf0; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .p-category-desc { font-size: 13px; color: rgba(200,210,230,0.45); line-height: 1.5; }
+  
+  /* --- Plant & Line Grid Styles --- */
+  .p-inner-back { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,190,0,0.7); cursor: pointer; border: 1px solid rgba(255,190,0,0.2); padding: 6px 14px; border-radius: 6px; transition: all 0.18s; margin: 0 auto 24px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; background: rgba(255,190,0,0.04); justify-content: center; width: auto;}
+  .p-inner-back:hover { color: #FFBE00; background: rgba(255,190,0,0.1); border-color: #FFBE00; }
+  .p-inner-back-wrapper { text-align: center; }
+  
+  .p-plants-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-width: 900px; margin: 0 auto 32px; }
+  .p-plant-card { background: rgba(255,190,0,0.05); border: 1px solid rgba(255,190,0,0.2); border-radius: 10px; padding: 18px 16px 14px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .p-plant-card:hover, .p-plant-card.active { border-color: #FFBE00; background: rgba(255,190,0,0.1); }
+  .p-plant-card.active { border-width: 1.5px; }
+  .p-plant-card.active::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: #FFBE00; }
+  .p-plant-num { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700; color: #FFBE00; line-height: 1; }
+  .p-plant-name { font-size: 13px; font-weight: 500; color: #e8eaf0; margin-top: 2px; }
+  .p-plant-lines { font-size: 11px; color: rgba(200,210,230,0.45); margin-top: 4px; }
+  .p-plant-count { position: absolute; top: 14px; right: 14px; font-size: 10px; background: rgba(255,190,0,0.12); color: #FFBE00; border: 1px solid rgba(255,190,0,0.25); padding: 2px 8px; border-radius: 10px; letter-spacing: 0.5px; }
+  .p-rnd-badge { display: inline-block; font-size: 9px; background: rgba(139,92,246,0.2); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); padding: 1px 6px; border-radius: 8px; margin-left: 4px; letter-spacing: 0.5px; }
+  
+  .p-lines-section { max-width: 900px; margin: 0 auto; }
+  .p-lines-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .p-lines-title { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.5px; }
+  .p-lines-title span { color: #FFBE00; }
+  .p-lines-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+  .p-line-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,190,0,0.15); border-radius: 7px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all 0.18s; position: relative; }
+  .p-line-btn:hover { border-color: #FFBE00; background: rgba(255,190,0,0.1); }
+  .p-line-btn .ln { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600; color: #e8eaf0; }
+  .p-line-btn .lb { font-size: 10px; color: rgba(200,210,230,0.4); letter-spacing: 0.5px; margin-top: 2px; }
+  .p-line-btn.rnd { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.08); }
+  .p-line-btn.rnd:hover { border-color: #a78bfa; background: rgba(139,92,246,0.15); }
+  .p-line-btn.rnd .ln { color: #a78bfa; }
+  
+  .p-placeholder { text-align: center; padding: 40px 20px; color: rgba(200,210,230,0.3); font-size: 13px; border: 1px dashed rgba(255,190,0,0.1); border-radius: 10px; }
+  .p-placeholder svg { width: 32px; height: 32px; stroke: rgba(255,190,0,0.2); fill: none; stroke-width: 1.5; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
+  
+  .p-footer { position: relative; z-index: 10; text-align: center; padding: 14px 32px 20px; border-top: 1px solid rgba(255,190,0,0.08); font-size: 11px; color: rgba(200,210,230,0.25); letter-spacing: 0.5px; }
+
+  /* --- Connection Status Styles --- */
+  .p-plant-status {
+    position: absolute;
+    top: 42px; 
+    right: 14px; 
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  
+  .p-plant-status.online { color: #22c55e; }
+  .p-plant-status.offline { color: #ef4444; }
+  
+  .p-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .online .p-status-dot { background: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, 0.6); }
+  .offline .p-status-dot { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
+
+  .p-plant-card.is-offline { opacity: 0.7; border-color: rgba(239, 68, 68, 0.2); }
+  .p-plant-card.is-offline:hover { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.05); }
+  .p-plant-card.is-offline.active::before { background: #ef4444; }
+
+  .p-line-status {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .p-line-status.online { background: #22c55e; box-shadow: 0 0 4px rgba(34, 197, 94, 0.5); }
+  .p-line-status.offline { background: #ef4444; box-shadow: 0 0 4px rgba(239, 68, 68, 0.5); }
+  .p-line-btn.is-offline { opacity: 0.5; border-color: rgba(239, 68, 68, 0.2); }
+  .p-line-btn.is-offline:hover { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.05); }
+</style>
+</head>
+<body>
+
+<div class="p-page">
+  <div class="p-gridbg"></div>
+
+  <header class="p-header">
+   <a class="p-back" href="hartalega_foresight_landing_page.html" style="text-decoration: none;">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Main portal
+   </a>
+    <div class="p-htitle">HARTALEGA FORESIGHT</div>
+    <div class="p-hright"><span class="p-dot"></span>Production monitoring active</div>
+  </header>
+
+  <section class="p-hero">
+    <div class="p-tag">Production Division</div>
+    <h1 id="heroTitle">Production <span>Modules</span></h1>
+    <p id="heroDesc">Select an area below to access dashboards, reports, or activity logs.</p>
+    <div class="p-divider"></div>
+  </section>
+
+  <section id="mainMenuView" class="p-body">
+    <div class="p-step-label">Select Production Area</div>
+    
+    <div class="p-category-grid">
+      <a class="p-category-card" onclick="showDashboardModule()">
+        <div class="p-category-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="p-category-title">Dashboard Module</div>
+        <div class="p-category-desc">Live telemetry, equipment monitoring, and specific plant/line dashboards.</div>
+      </a>
+
+      <a class="p-category-card" href="#">
+        <div class="p-category-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="p-category-title">Reports &amp; Checklists</div>
+        <div class="p-category-desc">Digital shift handovers, compliance checklists, and automated QA/QC reporting.</div>
+      </a>
+
+      <a class="p-category-card" href="#">
+        <div class="p-category-icon">
+          <svg viewBox="0 0 24 24"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="4"/></svg>
+        </div>
+        <div class="p-category-title">Activity Logs</div>
+        <div class="p-category-desc">Historical logs, technician interventions, maintenance dispatch, and system events.</div>
+      </a>
+
+      <a class="p-category-card" href="#">
+        <div class="p-category-icon">
+          <svg viewBox="0 0 24 24"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="4"/></svg>
+        </div>
+        <div class="p-category-title">Critical to Quality</div>
+        <div class="p-category-desc">CTQ walks, production line findings, and CTQ closing reports.</div>
+      </a>
+
+    </div>
+  </section>
+
+  <section id="dashboardModuleView" class="p-body" style="display:none;">
+    
+    <div class="p-inner-back-wrapper">
+      <div class="p-inner-back" onclick="showMainMenu()">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Modules
+      </div>
+    </div>
+
+    <div class="p-step-label">Step 1 — Select a plant</div>
+
+    <div class="p-plants-grid" id="plantGrid"></div>
+
+    <div class="p-step-label" id="linesLabel" style="display:none;">Select a production line</div>
+    <div class="p-lines-section" id="linesSection">
+      <div class="p-placeholder" id="linePlaceholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Select a plant above to view its production lines
+      </div>
+      <div id="linesGrid" style="display:none;"></div>
+    </div>
+  </section>
+
+  <footer class="p-footer">
+    Hartalega Foresight IoT Platform &nbsp;·&nbsp; Production Division &nbsp;·&nbsp; Confidential
+  </footer>
+</div>
+
+<script>
+// --- UI Navigation Logic ---
+function showDashboardModule() {
+  document.getElementById('mainMenuView').style.display = 'none';
+  document.getElementById('dashboardModuleView').style.display = 'block';
+  document.getElementById('heroTitle').innerHTML = 'Select <span>Plant</span> &amp; Line';
+  document.getElementById('heroDesc').innerText = 'Choose a plant to view its production lines, then select a line to open its dashboard.';
+}
+
+function showMainMenu() {
+  document.getElementById('dashboardModuleView').style.display = 'none';
+  document.getElementById('mainMenuView').style.display = 'block';
+  document.getElementById('heroTitle').innerHTML = 'Production <span>Modules</span>';
+  document.getElementById('heroDesc').innerText = 'Select an area below to access dashboards, reports, activity logs, or efficiency overviews.';
+  
+  if(selected) document.getElementById('plant-'+selected)?.classList.remove('active');
+  selected = null;
+  document.getElementById('linesLabel').style.display = 'none';
+  document.getElementById('linePlaceholder').style.display = 'block';
+  document.getElementById('linesGrid').style.display = 'none';
+}
+
+
+// --- Plant & Line Logic ---
+const plants = [
+  {num:1, status: 'online', lines:[1,12], extra:[]},
+  {num:2, status: 'online', lines:[13,24], extra:[]},
+  {num:3, status: 'offline', lines:[25,36], extra:[]},
+  {num:4, status: 'online', lines:[37,48], extra:[]},
+  {num:5, status: 'online', lines:[49,60], extra:[]},
+  {num:6, status: 'online', lines:[61,72], extra:[]},
+  {num:7, status: 'online', lines:[73,82], extra:[]},
+  {num:8, status: 'online', lines:[83,92], extra:[{num:105,label:'RND'}]},
+  {num:9, status: 'online', lines:[93,104], extra:[]},
+];
+
+let selected = null;
+
+function renderPlants() {
+  const grid = document.getElementById('plantGrid');
+  grid.innerHTML = '';
+  plants.forEach(p => {
+    const [s,e] = p.lines;
+    const count = (e - s + 1) + p.extra.length;
+    const hasRnd = p.extra.length > 0;
+    
+    // Status Logic
+    const isOnline = p.status === 'online';
+    const statusClass = isOnline ? 'online' : 'offline';
+    const statusText = isOnline ? 'Connected' : 'Disconnected';
+    const offlineClass = isOnline ? '' : ' is-offline';
+
+    const card = document.createElement('div');
+    card.className = 'p-plant-card' + offlineClass;
+    card.id = 'plant-'+p.num;
+    card.innerHTML = `
+      <div class="p-plant-status ${statusClass}">
+        <div class="p-status-dot"></div>${statusText}
+      </div>
+      <div class="p-plant-count">${count} lines</div>
+      <div class="p-plant-num" style="margin-top: 14px;">P${p.num}</div>
+      <div class="p-plant-name">Plant ${p.num}${hasRnd ? '<span class="p-rnd-badge">RND</span>' : ''}</div>
+      <div class="p-plant-lines">Lines ${s} – ${e}${hasRnd ? ' + Line 105' : ''}</div>
+    `;
+    card.onclick = () => selectPlant(p);
+    grid.appendChild(card);
+  });
+}
+
+function selectPlant(p) {
+  if(selected) document.getElementById('plant-'+selected)?.classList.remove('active');
+  selected = p.num;
+  document.getElementById('plant-'+p.num).classList.add('active');
+  document.getElementById('linesLabel').style.display = 'block';
+  renderLines(p);
+}
+
+function renderLines(p) {
+  const placeholder = document.getElementById('linePlaceholder');
+  const grid = document.getElementById('linesGrid');
+  placeholder.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.className = 'p-lines-grid';
+  grid.innerHTML = '';
+
+  const isPlantOffline = p.status === 'offline';
+
+  // --- Plant Main Dashboard Button (Hash Routing) ---
+  const mainBtn = document.createElement('div');
+  mainBtn.className = 'p-line-btn';
+  mainBtn.style.gridColumn = '1 / -1'; 
+  mainBtn.style.borderColor = 'rgba(34, 197, 94, 0.4)';
+  mainBtn.style.background = 'rgba(34, 197, 94, 0.08)';
+  mainBtn.innerHTML = `
+    <div class="ln" style="color: #22c55e;">MAIN</div>
+    <div class="lb">Plant ${p.num} Main Dashboard</div>
+  `;
+  mainBtn.onclick = () => {
+    // Updates using Hash instead of separate files
+    window.location.href = `production_details/hartalega_production_plant_main.html#P${p.num}`;
+  };
+  grid.appendChild(mainBtn);
+
+  const [s,e] = p.lines;
+  
+  // Generate standard production lines (Hash Routing)
+  for(let i = s; i <= e; i++) {
+    const isLineOnline = isPlantOffline ? false : (Math.random() > 0.1); 
+    const lineStatusClass = isLineOnline ? 'online' : 'offline';
+    const lineOfflineClass = isLineOnline ? '' : ' is-offline';
+
+    const btn = document.createElement('div');
+    btn.className = 'p-line-btn' + lineOfflineClass;
+    btn.innerHTML = `
+      <div class="p-line-status ${lineStatusClass}"></div>
+      <div class="ln">L${i}</div>
+      <div class="lb">Line ${i}</div>
+    `;
+    btn.onclick = () => {
+      // Updates using Hash instead of separate files
+      window.location.href = `production_details/hartalega_production_line_landing.html#P${p.num}L${i}`;
+    };
+    grid.appendChild(btn);
+  }
+  
+  // Generate extra RND lines (like Line 105) (Hash Routing)
+  p.extra.forEach(ex => {
+    const isLineOnline = isPlantOffline ? false : (Math.random() > 0.1);
+    const lineStatusClass = isLineOnline ? 'online' : 'offline';
+    const lineOfflineClass = isLineOnline ? '' : ' is-offline';
+
+    const btn = document.createElement('div');
+    btn.className = 'p-line-btn rnd' + lineOfflineClass;
+    btn.innerHTML = `
+      <div class="p-line-status ${lineStatusClass}"></div>
+      <div class="ln">L${ex.num}</div>
+      <div class="lb">${ex.label}</div>
+    `;
+    btn.onclick = () => {
+      // Updates using Hash instead of separate files
+      window.location.href = `production_details/hartalega_production_line_landing.html#P${p.num}L${ex.num}`;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+// Initialize on page load
+renderPlants();
+</script>
+
+</body>
+</html>

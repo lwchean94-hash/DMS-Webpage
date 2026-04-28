@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - OE Portal</title>
+<link rel="icon" type="image/png" href="Hartalega_Foresight_Logo.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    zoom: 80%;
+    background: #0a1628;
+    overflow-x: hidden;
+  }
+  
+  .oe-page {
+    font-family: 'Inter', sans-serif;
+    background: #0a1628;
+    min-height: 100vh;
+    color: #e8eaf0;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .oe-gridbg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.65) 100%),
+      url('Foresight_Background.jpg');
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    background-repeat: repeat, repeat, no-repeat, no-repeat;
+    background-attachment: fixed;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .oe-glow {
+    position: absolute;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(255,190,0,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .oe-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid rgba(255,190,0,0.15);
+    background: rgba(10,22,40,0.9);
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+
+  .oe-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255,190,0,0.7);
+    cursor: pointer;
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+
+  .oe-back:hover {
+    color: #FFBE00;
+    border-color: rgba(255,190,0,0.5);
+    background: rgba(255,190,0,0.06);
+  }
+
+  .oe-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .oe-htitle {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e8eaf0;
+    letter-spacing: 1px;
+  }
+  .oe-htitle span { color: #FFBE00; }
+
+  .oe-hright { font-size: 12px; color: rgba(200,210,230,0.6); display: flex; align-items: center; }
+
+  .oe-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .oe-main {
+    position: relative;
+    z-index: 10;
+    padding: 48px 32px 60px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .oe-hero {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .oe-hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #FFBE00;
+    border: 1px solid rgba(255,190,0,0.3);
+    padding: 4px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    background: rgba(255,190,0,0.05);
+  }
+
+  .oe-hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .oe-hero h1 span { color: #FFBE00; }
+
+  .oe-hero p {
+    font-size: 14px;
+    color: rgba(200,210,230,0.5);
+    margin-top: 12px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* Single-card centred layout — mirrors QA grid style but centred */
+  .oe-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  /* KPI card spans both columns and is max ~520px wide, centred */
+  .oe-module-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,190,0,0.15);
+    border-radius: 12px;
+    padding: 36px 32px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+    min-height: 240px;
+    grid-column: 1 / -1;
+    max-width: 520px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .oe-module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: transparent;
+    transition: background 0.25s;
+  }
+
+  .oe-module-card:hover {
+    background: rgba(255,190,0,0.05);
+    border-color: rgba(255,190,0,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .oe-module-card:hover::before { background: #FFBE00; }
+
+  /* KPI metrics preview strip inside the card */
+  .oe-kpi-strip {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .oe-kpi-pill {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: rgba(255,190,0,0.65);
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(255,190,0,0.06);
+  }
+
+  .oe-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,190,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    transition: all 0.2s;
+  }
+
+  .oe-icon svg { width: 28px; height: 28px; stroke: #FFBE00; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s; }
+
+  .oe-module-card:hover .oe-icon {
+    background: rgba(255,190,0,0.1);
+    border-color: rgba(255,190,0,0.4);
+  }
+
+  .oe-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #e8eaf0;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .oe-desc {
+    font-size: 14px;
+    color: rgba(200,210,230,0.45);
+    line-height: 1.6;
+    flex-grow: 1;
+  }
+
+  .oe-arrow {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,190,0,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.25s;
+  }
+
+  .oe-module-card:hover .oe-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: #FFBE00;
+  }
+
+  .oe-arrow svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* Coming-soon placeholder cards */
+  .oe-placeholder-card {
+    background: rgba(255,255,255,0.01);
+    border: 1px dashed rgba(255,190,0,0.08);
+    border-radius: 12px;
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 240px;
+    opacity: 0.5;
+  }
+
+  .oe-coming {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,190,0,0.3);
+    margin-top: auto;
+  }
+
+  .oe-footer {
+    position: relative;
+    text-align: center;
+    padding: 24px 32px 32px;
+    font-size: 11px;
+    color: rgba(200,210,230,0.25);
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="oe-page">
+  <div class="oe-gridbg"></div>
+  <div class="oe-glow"></div>
+
+  <header class="oe-header">
+    <a href="hartalega_foresight_landing_page.html" class="oe-back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Main portal
+    </a>
+
+    <div class="oe-htitle">
+      HARTALEGA <span>FORESIGHT</span>
+    </div>
+
+    <div class="oe-hright">
+      <span class="oe-dot"></span> OE Network Connected
+    </div>
+  </header>
+
+  <main class="oe-main">
+
+    <div class="oe-hero">
+      <div class="oe-hero-tag">Operation Excellence Division</div>
+      <h1>OE <span>Portal</span></h1>
+      <p>Access and manage operational KPI thresholds, efficiency targets, and performance benchmarks across all production plants and lines.</p>
+    </div>
+
+    <div class="oe-modules-grid">
+
+      <!-- Operation KPI Database — primary card -->
+      <a href="./oe_details/hartalega_oe_kpi_db.html" class="oe-module-card">
+        <div class="oe-icon">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+            <polyline points="2 20 22 20"/>
+          </svg>
+        </div>
+        <div class="oe-title">Operation KPI Database</div>
+        <div class="oe-desc">Define and manage KPI thresholds for production lines across all plants. Set targets and control limits for line speed, utility consumption per thousand pieces, OEE, and other operational performance indicators.</div>
+        <div class="oe-kpi-strip">
+          <span class="oe-kpi-pill">Line Speed</span>
+          <span class="oe-kpi-pill">Utility Consumption (ptp)</span>
+          <span class="oe-kpi-pill">OEE Target</span>
+          <span class="oe-kpi-pill">+ More KPIs</span>
+        </div>
+        <div class="oe-arrow">
+          Access Database
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
+
+    </div>
+
+  </main>
+
+  <footer class="oe-footer">
+    Hartalega Foresight IoT Platform &nbsp;·&nbsp; Operation Excellence Division &nbsp;·&nbsp; Confidential
+  </footer>
+</div>
+
+</body>
+</html>

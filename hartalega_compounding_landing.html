@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hartalega Foresight - Compounding</title>
+<link rel="icon" type="image/png" href="Hartalega_Foresight_Logo.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  
+  .p-page {
+    font-family: 'Inter', sans-serif;
+    background: #0a1628;
+    min-height: 100vh;
+    color: #e8eaf0;
+    position: relative;
+  }
+  
+  /* Global Background with Vignette */
+  .p-gridbg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
+      radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.65) 100%),
+      url('Foresight_Background.jpg'); 
+    background-size: 48px 48px, 48px 48px, cover, cover;
+    background-position: center, center, center, center;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* General Landing Page Styles */
+  .p-header{position:relative;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid rgba(255,190,0,0.15);background:rgba(10,22,40,0.9); z-index: 10;}
+  .p-back{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,190,0,0.7);cursor:pointer;border:1px solid rgba(255,190,0,0.2);padding:6px 12px;border-radius:6px;transition:all 0.18s;text-decoration:none;}
+  .p-back:hover{color:#FFBE00;border-color:rgba(255,190,0,0.5);background:rgba(255,190,0,0.06);}
+  .p-back svg{width:14px;height:14px;stroke:#FFBE00;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .p-htitle{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#FFBE00;letter-spacing:1px;}
+  .p-hright{font-size:11px;color:rgba(200,210,230,0.45);letter-spacing:0.5px;}
+  .p-dot{display:inline-block;width:6px;height:6px;background:#22c55e;border-radius:50%;margin-right:5px;animation:blink 2s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+  
+  .p-hero{position:relative;padding:24px 32px 16px;text-align:center; z-index: 10;}
+  .p-tag{display:inline-block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#FFBE00;border:1px solid rgba(255,190,0,0.25);padding:4px 14px;border-radius:20px;margin-bottom:12px;background:rgba(255,190,0,0.05);}
+  .p-hero h1{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:#fff;letter-spacing:1.5px;text-transform:uppercase;}
+  .p-hero h1 span{color:#FFBE00;}
+  .p-hero p{font-size:13px;color:rgba(200,210,230,0.5);margin-top:8px;max-width: 600px; margin-left: auto; margin-right: auto;}
+  .p-divider{width:50px;height:2px;background:rgba(255,190,0,0.4);margin:14px auto 0;}
+  .p-body{position:relative;padding:16px 24px 32px; z-index: 10;}
+  .p-step-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,190,0,0.45);margin-bottom:16px;text-align:center;}
+  
+  /* Landing Grid */
+  .p-category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 900px; margin: 0 auto 32px; }
+  .p-category-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,190,0,0.15); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; text-decoration: none;}
+  .p-category-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background 0.25s; }
+  .p-category-card:hover { background: rgba(255,190,0,0.05); border-color: rgba(255,190,0,0.4); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .p-category-card:hover::before { background: #FFBE00; }
+  .p-category-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,190,0,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; transition: all 0.2s; }
+  .p-category-icon svg { width: 20px; height: 20px; stroke: #FFBE00; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .p-category-title { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 600; color: #e8eaf0; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .p-category-desc { font-size: 12px; color: rgba(200,210,230,0.45); line-height: 1.5; }
+  
+  /* Buttons & Placeholders */
+  .p-inner-back { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,190,0,0.7); cursor: pointer; border: 1px solid rgba(255,190,0,0.2); padding: 6px 14px; border-radius: 6px; transition: all 0.18s; margin: 0 auto 24px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; background: rgba(255,190,0,0.04); justify-content: center; width: auto;}
+  .p-inner-back:hover { color: #FFBE00; background: rgba(255,190,0,0.1); border-color: #FFBE00; }
+  .p-inner-back-wrapper { text-align: center; }
+  
+  .p-plants-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:900px;margin:0 auto 32px;}
+  .p-plant-card{background:rgba(255,190,0,0.05);border:1px solid rgba(255,190,0,0.2);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+  .p-plant-card:hover,.p-plant-card.active{border-color:#FFBE00;background:rgba(255,190,0,0.1);}
+  .p-plant-card.active{border-width:1.5px;}
+  .p-plant-card.active::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#FFBE00;}
+  .p-plant-num{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:#FFBE00;line-height:1;margin-top: 14px;}
+  .p-plant-name{font-size:13px;font-weight:500;color:#e8eaf0;margin-top:2px;}
+  .p-plant-lines{font-size:11px;color:rgba(200,210,230,0.45);margin-top:4px;}
+  .p-plant-count{position:absolute;top:12px;right:12px;font-size:10px;background:rgba(255,190,0,0.12);color:#FFBE00;border:1px solid rgba(255,190,0,0.25);padding:2px 8px;border-radius:10px;letter-spacing:0.5px;}
+  
+  .p-lines-section{max-width:900px;margin:0 auto;}
+  .p-lines-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;}
+  .p-line-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,190,0,0.15);border-radius:7px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.18s;position: relative;}
+  .p-line-btn:hover{border-color:#FFBE00;background:rgba(255,190,0,0.1);}
+  .p-line-btn .ln{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;color:#e8eaf0;}
+  .p-line-btn .lb{font-size:9px;color:rgba(200,210,230,0.4);letter-spacing:0.5px; margin-top: 2px;}
+  
+  .p-placeholder{text-align:center;padding:40px 20px;color:rgba(200,210,230,0.3);font-size:13px;border:1px dashed rgba(255,190,0,0.1);border-radius:10px;}
+  .p-placeholder svg{width:32px;height:32px;stroke:rgba(255,190,0,0.2);fill:none;stroke-width:1.5;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;}
+  
+  .p-plant-status { position: absolute; top: 38px; right: 12px; display: flex; align-items: center; gap: 4px; font-size: 9px; text-transform: uppercase; font-weight: 600; }
+  .p-plant-status.online { color: #22c55e; }
+  .p-plant-status.offline { color: #ef4444; }
+  .p-status-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .online .p-status-dot { background: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, 0.6); }
+  .offline .p-status-dot { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
+  .p-plant-card.is-offline { opacity: 0.7; border-color: rgba(239, 68, 68, 0.2); }
+  .p-plant-card.is-offline:hover { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.05); }
+  .p-plant-card.is-offline.active::before { background: #ef4444; }
+
+
+  /* =========================================================
+     COMPACT DASHBOARD VIEW (Scrolling Enabled)
+     ========================================================= */
+  .cpd-main {
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 16px;
+    padding-bottom: 60px;
+  }
+  
+  .cpd-col { display: flex; flex-direction: column; gap: 12px; }
+  .cpd-htitle { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 1px; display: inline-block;}
+  .cpd-htitle span { color: #22c55e; }
+
+  /* Dashboard Cards */
+  .cpd-card { background: rgba(10,22,40,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; backdrop-filter: blur(8px); display: flex; flex-direction: column;}
+  .cpd-card-header { background: rgba(255,255,255,0.03); padding: 8px 16px; font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; color: #e8eaf0; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
+  .cpd-card-body { padding: 12px 16px; display: flex; gap: 16px; align-items: center; justify-content: center;}
+
+  /* Tank Grids & Groups */
+  .tank-grid-wrapper { flex-grow: 1; display: flex; justify-content: center; }
+  .tank-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center;}
+  
+  .tank-badge { 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 50%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    font-family: 'Rajdhani', sans-serif; 
+    font-weight: 700; 
+    font-size: 10px; 
+    line-height: 1.1; 
+    border: 1.5px solid; 
+    cursor: pointer; 
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .tank-badge:hover {
+    transform: scale(1.15); 
+    z-index: 2;
+  }
+  .tank-badge span { font-size: 8px; font-family: 'Inter', sans-serif; font-weight: 500; }
+
+  .mt-line-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    background: rgba(0,0,0,0.25);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 8px;
+    align-items: center;
+  }
+  .mt-line-label {
+    font-size: 9px;
+    color: rgba(255,190,0,0.8);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  /* Tank Status Colors */
+  .status-green { border-color: rgba(34, 197, 94, 0.6); background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+  .status-grey { border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.4); }
+  .status-red { border-color: #ef4444; background: rgba(239, 68, 68, 0.15); color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); animation: pulse-red 2s infinite; }
+
+  .tank-summary { display: flex; flex-direction: column; gap: 8px; min-width: 65px; border-left: 1px dashed rgba(255,255,255,0.1); padding-left: 16px; justify-content: center; }
+  .summary-box { text-align: center; }
+  .summary-label { font-size: 8px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .summary-val { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px; font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; color: #fff; }
+  .summary-val.green-text { color: #22c55e; border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.05);}
+
+  /* CAA Specific Layout - Updated for Interactivity */
+  .caa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .caa-tank { 
+    background: rgba(0,0,0,0.2); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 8px; 
+    padding: 10px; 
+    text-align: center; 
+    cursor: pointer; 
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .caa-tank:hover {
+    border-color: #FFBE00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 190, 0, 0.15);
+  }
+  .caa-tank-title { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: inline-block; }
+  .caa-acid { color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4); background: rgba(34, 197, 94, 0.1); }
+  .caa-alkaline { color: rgba(200,210,230,0.8); border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
+  .caa-metrics { display: flex; justify-content: center; gap: 12px; font-size: 11px; }
+  .caa-metric-label { color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; font-size: 8px; margin-bottom: 2px;}
+  .caa-metric-val { font-family: 'Inter', sans-serif; font-weight: 600; color: #fff; }
+  .caa-metric-val span { font-size: 9px; color: rgba(255,255,255,0.5); font-weight: 400;}
+
+  /* Alarms Section */
+  .alarm-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .a-box { text-align: center; padding: 8px; border: 1px solid; border-radius: 6px; background: rgba(0,0,0,0.2); }
+  .a-box-title { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; font-weight: 600; }
+  .a-box-val { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; }
+  .a-crit { border-color: rgba(239, 68, 68, 0.5); color: #ef4444; }
+  .a-warn { border-color: rgba(245, 158, 11, 0.5); color: #f59e0b; }
+  .a-info { border-color: rgba(59, 130, 246, 0.5); color: #3b82f6; }
+  .a-ack { border-color: rgba(34, 197, 94, 0.5); color: #22c55e; }
+
+  .alarm-table { width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; }
+  .alarm-table th { padding: 6px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 500;}
+  .alarm-table td { padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; }
+  .alarm-table tr:hover { background: rgba(255,255,255,0.02); }
+  .badge { padding: 3px 8px; border-radius: 10px; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; }
+  .b-crit { background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+  .b-warn { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); }
+  .b-info { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-color: rgba(59, 130, 246, 0.3); }
+
+</style>
+</head>
+<body>
+
+<div class="p-page">
+  <div class="p-gridbg"></div>
+
+  <header class="p-header">
+   <a class="p-back" href="hartalega_foresight_landing_page.html">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Main portal
+   </a>
+    <div class="p-htitle">HARTALEGA FORESIGHT</div>
+    <div class="p-hright"><span class="p-dot"></span>Compounding monitoring active</div>
+  </header>
+
+  <section class="p-hero" id="heroSection">
+    <div class="p-tag">Compounding Division</div>
+    <h1 id="heroTitle">Compounding <span>Modules</span></h1>
+    <p id="heroDesc">Select an area below to access dashboards, reports or activity logs.</p>
+    <div class="p-divider"></div>
+  </section>
+
+  <section id="mainMenuView" class="p-body">
+    <div class="p-step-label">Select Compounding Area</div>
+    <div class="p-category-grid">
+      <a class="p-category-card" onclick="showDashboardModule()">
+        <div class="p-category-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+        <div class="p-category-title">Dashboard Module</div>
+        <div class="p-category-desc">Live telemetry, equipment monitoring, and specific compounding subarea dashboards.</div>
+      </a>
+      <a class="p-category-card" href="#">
+        <div class="p-category-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+        <div class="p-category-title">Reports &amp; Checklists</div>
+        <div class="p-category-desc">Digital shift handovers, compliance checklists, and automated QA/QC reporting.</div>
+      </a>
+      
+      <a class="p-category-card" href="#">
+        <div class="p-category-icon">
+          <svg viewBox="0 0 24 24"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="4"/></svg>
+        </div>
+        <div class="p-category-title">Activity Logs</div>
+        <div class="p-category-desc">Historical logs, technician interventions, maintenance dispatch, and system events.</div>
+      </a>
+    </div>
+  </section>
+
+  <section id="dashboardModuleView" class="p-body" style="display:none;">
+    <div class="p-inner-back-wrapper">
+      <div class="p-inner-back" onclick="showMainMenu()">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Modules
+      </div>
+    </div>
+    <div class="p-step-label">Step 1 — Select a plant</div>
+    <div class="p-plants-grid" id="plantGrid"></div>
+
+    <div class="p-step-label" id="linesLabel" style="display:none;">Step 2 — Select a compounding area</div>
+    <div class="p-lines-section" id="linesSection">
+      
+      <div class="p-placeholder" id="linePlaceholder">
+        <svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:rgba(255,190,0,0.2);fill:none;stroke-width:1.5;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Select a plant above to view its compounding areas
+      </div>
+      <div id="linesGrid" style="display:none;"></div>
+    </div>
+  </section>
+
+  <section id="plantMainDashboardView" class="p-body" style="display:none;">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1500px; margin: 0 auto 16px;">
+      <div class="p-inner-back" onclick="backToPlantSelection()" style="margin: 0;">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Plant Selection
+      </div>
+      <div class="cpd-htitle" id="dashboardPlantTitle">PLANT <span>· MAIN DASHBOARD</span></div>
+    </div>
+
+    <div class="cpd-main">
+      <div class="cpd-col">
+        
+        <div class="cpd-card">
+          <div class="cpd-card-header">Bulk Tanks</div>
+          <div class="cpd-card-body">
+            <div class="tank-grid-wrapper"><div class="tank-grid" id="grid-bulk"></div></div>
+            <div class="tank-summary">
+              <div class="summary-box"><div class="summary-label">Availability</div><div class="summary-val">4</div></div>
+              <div class="summary-box"><div class="summary-label">Filled</div><div class="summary-val green-text">36</div></div>
+              <div class="summary-box"><div class="summary-label">Percentage %</div><div class="summary-val green-text">90</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cpd-card">
+          <div class="cpd-card-header">Mixing Tanks</div>
+          <div class="cpd-card-body">
+            <div class="tank-grid-wrapper"><div class="tank-grid" id="grid-mixing" style="gap: 12px;"></div></div>
+            <div class="tank-summary">
+              <div class="summary-box"><div class="summary-label">MT - A</div><div class="summary-val">1</div></div>
+              <div class="summary-box"><div class="summary-label">MT - B</div><div class="summary-val">1</div></div>
+              <div class="summary-box"><div class="summary-label">MT - C</div><div class="summary-val green-text">0</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+          <div class="cpd-card">
+            <div class="cpd-card-header">Coagulant Tanks</div>
+            <div class="cpd-card-body"><div class="tank-grid-wrapper"><div class="tank-grid" id="grid-coag"></div></div></div>
+          </div>
+
+          <div class="cpd-card" id="card-polymer" style="display: none;">
+            <div class="cpd-card-header">Polymer Tanks</div>
+            <div class="cpd-card-body"><div class="tank-grid-wrapper"><div class="tank-grid" id="grid-polymer"></div></div></div>
+          </div>
+
+          <div class="cpd-card" id="card-coating" style="display: none;">
+            <div class="cpd-card-header">Coating Tanks</div>
+            <div class="cpd-card-body"><div class="tank-grid-wrapper"><div class="tank-grid" id="grid-coat"></div></div></div>
+          </div>
+
+          <div class="cpd-card">
+            <div class="cpd-card-header">Storage Tanks</div>
+            <div class="cpd-card-body"><div class="tank-grid-wrapper"><div class="tank-grid" id="grid-store"></div></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="cpd-col">
+        <div class="cpd-card">
+          <div class="cpd-card-header">Chemical Dosing System (CDS)</div>
+          <div class="cpd-card-body"><div class="tank-grid-wrapper"><div class="tank-grid" id="grid-cds"></div></div></div>
+        </div>
+
+        <div class="cpd-card">
+          <div class="cpd-card-header">Centralised Acid & Alkaline (CAA)</div>
+          <div class="cpd-card-body">
+            <div class="caa-grid">
+              
+              <div class="caa-tank" onclick="goToCaaDetails()">
+                <div class="caa-tank-title caa-acid">ACID 1</div>
+                <div class="caa-metrics">
+                  <div><div class="caa-metric-label">Level</div><div class="caa-metric-val">570 <span>cm</span></div></div>
+                  <div><div class="caa-metric-label">Supply</div><div class="caa-metric-val">0.92 <span>bar</span></div></div>
+                </div>
+              </div>
+              
+              <div class="caa-tank" onclick="goToCaaDetails()">
+                <div class="caa-tank-title caa-alkaline">ACID 2</div>
+                <div class="caa-metrics">
+                  <div><div class="caa-metric-label">Level</div><div class="caa-metric-val">0 <span>cm</span></div></div>
+                  <div><div class="caa-metric-label">Supply</div><div class="caa-metric-val">0 <span>bar</span></div></div>
+                </div>
+              </div>
+              
+              <div class="caa-tank" onclick="goToCaaDetails()">
+                <div class="caa-tank-title caa-alkaline">ALKALINE 1</div>
+                <div class="caa-metrics">
+                  <div><div class="caa-metric-label">Level</div><div class="caa-metric-val">0 <span>cm</span></div></div>
+                  <div><div class="caa-metric-label">Supply</div><div class="caa-metric-val">0 <span>bar</span></div></div>
+                </div>
+              </div>
+              
+              <div class="caa-tank" onclick="goToCaaDetails()">
+                <div class="caa-tank-title caa-acid">ALKALINE 2</div>
+                <div class="caa-metrics">
+                  <div><div class="caa-metric-label">Level</div><div class="caa-metric-val">555 <span>cm</span></div></div>
+                  <div><div class="caa-metric-label">Supply</div><div class="caa-metric-val">0.67 <span>bar</span></div></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="cpd-card" style="flex-grow: 1;">
+          <div class="cpd-card-header">Abnormal & Alarms</div>
+          <div class="cpd-card-body" style="flex-direction: column; justify-content: flex-start; padding: 12px;">
+            <div class="alarm-summary">
+              <div class="a-box a-crit"><div class="a-box-title">Critical</div><div class="a-box-val">2</div></div>
+              <div class="a-box a-warn"><div class="a-box-title">Warning</div><div class="a-box-val">5</div></div>
+              <div class="a-box a-info"><div class="a-box-title">Info</div><div class="a-box-val">3</div></div>
+              <div class="a-box a-ack"><div class="a-box-title">Acknowledged</div><div class="a-box-val">4</div></div>
+            </div>
+            <table class="alarm-table">
+              <thead><tr><th>Time</th><th>Area</th><th>Alarms</th><th>Value</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>14:21</td><td>MIXING</td><td>MT 4A – pH High</td><td>11.20</td><td><span class="badge b-crit">Critical</span></td></tr>
+                <tr><td>14:18</td><td>BULK</td><td>BT 09 – Level Low</td><td>18%</td><td><span class="badge b-warn">Warning</span></td></tr>
+                <tr><td>14:10</td><td>CDS</td><td>MT 11C – Dosing Pump Trip</td><td>0 kg/min</td><td><span class="badge b-crit">Critical</span></td></tr>
+                <tr><td>14:03</td><td>CAA</td><td>ACID 2 – Incoming Pressure Low</td><td>0.40 bar</td><td><span class="badge b-warn">Warning</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// --- SECTION TOGGLING LOGIC (SPA) ---
+function hideAllViews() {
+  document.getElementById('mainMenuView').style.display = 'none';
+  document.getElementById('dashboardModuleView').style.display = 'none';
+  document.getElementById('plantMainDashboardView').style.display = 'none';
+}
+
+function showMainMenu() {
+  hideAllViews();
+  document.getElementById('heroSection').style.display = 'block';
+  document.getElementById('mainMenuView').style.display = 'block';
+  if(selected) document.getElementById('plant-'+selected)?.classList.remove('active');
+  selected = null;
+  document.getElementById('linesLabel').style.display = 'none';
+  document.getElementById('linePlaceholder').style.display = 'block';
+  document.getElementById('linesGrid').style.display = 'none';
+}
+
+function showDashboardModule() {
+  hideAllViews();
+  document.getElementById('heroSection').style.display = 'block';
+  document.getElementById('dashboardModuleView').style.display = 'block';
+}
+
+// Track current plant for interactive routing within the dashboard
+let currentDashboardPlant = 1;
+
+function showPlantMainDashboard(pNum) {
+  hideAllViews();
+  currentDashboardPlant = pNum;
+  document.getElementById('heroSection').style.display = 'none'; 
+  document.getElementById('plantMainDashboardView').style.display = 'block';
+  document.getElementById('dashboardPlantTitle').innerHTML = `PLANT ${pNum} <span>· MAIN DASHBOARD</span>`;
+  
+  initTanks(pNum);
+  window.scrollTo(0, 0); 
+}
+
+function backToPlantSelection() { showDashboardModule(); }
+
+// --- PLANT DEFINITIONS & ROUTING ---
+const plantLines = {
+  1: [1, 12], 2: [13, 24], 3: [25, 36], 4: [37, 48],
+  5: [49, 60], 6: [61, 72], 7: [73, 82], 8: [83, 92], 9: [93, 104]
+};
+
+const compAreas = [
+  { id: 'bulk', label: 'Bulk Tanks', abbr: 'BULK' },
+  { id: 'mixing', label: 'Mixing Tanks', abbr: 'MIX' },
+  { id: 'coagulant', label: 'Coagulant Tanks', abbr: 'COAG' },
+  { id: 'coating', label: 'Coating Tanks', abbr: 'COAT' },
+  { id: 'caa', label: 'Centralised Acid & Alkaline', abbr: 'CAA' } // Replaced ACS with CAA
+];
+
+const plants = [
+  {num:1, status: 'online'}, {num:2, status: 'online'}, {num:3, status: 'offline'},
+  {num:4, status: 'online'}, {num:5, status: 'online'}, {num:6, status: 'online'},
+  {num:7, status: 'online'}, {num:8, status: 'online'}, {num:9, status: 'online'}
+];
+
+let selected = null;
+
+function renderPlants() {
+  const grid = document.getElementById('plantGrid');
+  grid.innerHTML = '';
+  plants.forEach(p => {
+    const isOnline = p.status === 'online';
+    const statusClass = isOnline ? 'online' : 'offline';
+    const statusText = isOnline ? 'Connected' : 'Disconnected';
+    const card = document.createElement('div');
+    card.className = 'p-plant-card' + (isOnline ? '' : ' is-offline');
+    card.id = 'plant-'+p.num;
+    card.innerHTML = `
+      <div class="p-plant-status ${statusClass}"><div class="p-status-dot"></div>${statusText}</div>
+      <div class="p-plant-num">P${p.num}</div>
+      <div class="p-plant-name">Plant ${p.num}</div>
+      <div class="p-plant-lines">Lines ${plantLines[p.num][0]} – ${plantLines[p.num][1]}</div>
+    `;
+    card.onclick = () => selectPlant(p);
+    grid.appendChild(card);
+  });
+}
+
+function selectPlant(p) {
+  if(selected) document.getElementById('plant-'+selected)?.classList.remove('active');
+  selected = p.num;
+  document.getElementById('plant-'+p.num).classList.add('active');
+  document.getElementById('linesLabel').style.display = 'block';
+  renderAreas(p);
+}
+
+function renderAreas(p) {
+  const placeholder = document.getElementById('linePlaceholder');
+  const grid = document.getElementById('linesGrid');
+  placeholder.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.className = 'p-lines-grid';
+  grid.innerHTML = '';
+
+  const isPlantOffline = p.status === 'offline';
+
+  // MAIN DASHBOARD BUTTON
+  const mainBtn = document.createElement('div');
+  mainBtn.className = 'p-line-btn' + (isPlantOffline ? ' is-offline' : '');
+  mainBtn.style.gridColumn = '1 / -1'; 
+  mainBtn.style.borderColor = 'rgba(34, 197, 94, 0.4)';
+  mainBtn.style.background = 'rgba(34, 197, 94, 0.08)';
+  mainBtn.innerHTML = `<div class="ln" style="color: #22c55e;">MAIN DASHBOARD</div><div class="lb">Plant ${p.num} Compounding Overview</div>`;
+  mainBtn.onclick = () => showPlantMainDashboard(p.num);
+  grid.appendChild(mainBtn);
+
+  // Other Areas
+  compAreas.forEach(area => {
+    // Hide coating area button if not plant 6 or 7
+    if (area.id === 'coating' && p.num !== 6 && p.num !== 7) return;
+
+    const btn = document.createElement('div');
+    btn.className = 'p-line-btn' + (isPlantOffline ? ' is-offline' : '');
+    btn.innerHTML = `<div class="ln">${area.abbr}</div><div class="lb">${area.label}</div>`;
+    
+    // Calculate the FIRST TANK depending on the area & plant lines
+    let firstTankId = '';
+    if (area.id === 'bulk') firstTankId = 'BT01';
+    else if (area.id === 'mixing') firstTankId = `MT${plantLines[p.num][0]}A`;
+    else if (area.id === 'coagulant') firstTankId = 'CT1A';
+    else if (area.id === 'coating') firstTankId = 'CTK1A';
+    else firstTankId = '01'; // Fallback
+
+    btn.onclick = () => {
+      // Special routing for CAA page (Only needs Plant Number)
+      if(area.id === 'caa') {
+        window.location.href = `./compounding_details/hartalega_compounding_plant_caa.html#P${p.num}`;
+      } else {
+        window.location.href = `./compounding_details/hartalega_compounding_plant_${area.id}.html#P${p.num}${firstTankId}`;
+      }
+    };
+    
+    grid.appendChild(btn);
+  });
+}
+
+// --- DYNAMIC TANK RENDERING & ROUTING ---
+
+function goToTankDetails(pNum, areaId, tankId) {
+  window.location.href = `./compounding_details/hartalega_compounding_plant_${areaId}.html#P${pNum}${tankId}`;
+}
+
+// Dedicated routing function for CAA clicks inside the static dashboard view
+function goToCaaDetails() {
+  window.location.href = `./compounding_details/hartalega_compounding_plant_caa.html#P${currentDashboardPlant}`;
+}
+
+function generateStandardTanks(containerId, prefix, labels, pNum, areaId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let html = '';
+  labels.forEach((label) => {
+    let statusClass = 'status-green';
+    if (Math.random() > 0.95) statusClass = 'status-red';
+    else if (Math.random() > 0.8) statusClass = 'status-grey';
+    
+    const tankId = `${prefix}${label}`;
+    html += `<div class="tank-badge ${statusClass}" onclick="goToTankDetails(${pNum}, '${areaId}', '${tankId}')" title="View ${tankId} Details">${prefix}<br><span>${label}</span></div>`;
+  });
+  container.innerHTML = html;
+}
+
+function generateGroupedMixingTanks(pNum) {
+  const container = document.getElementById('grid-mixing');
+  const [start, end] = plantLines[pNum];
+  let html = '';
+  
+  for (let line = start; line <= end; line++) {
+    html += `
+      <div class="mt-line-group">
+        <div class="mt-line-label">L${line}</div>
+    `;
+    ['A', 'B', 'C'].forEach(letter => {
+      let statusClass = 'status-green';
+      if (Math.random() > 0.95) statusClass = 'status-red';
+      else if (Math.random() > 0.85) statusClass = 'status-grey';
+      
+      const tankId = `MT${line}${letter}`;
+      html += `<div class="tank-badge ${statusClass}" onclick="goToTankDetails(${pNum}, 'mixing', '${tankId}')" title="View ${tankId} Details">MT<br><span>${line}${letter}</span></div>`;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function initTanks(pNum) {
+  // 1. Bulk Tanks 
+  const btLabels = Array.from({length: 40}, (_, i) => String(i + 1).padStart(2, '0'));
+  generateStandardTanks('grid-bulk', 'BT', btLabels, pNum, 'bulk');
+
+  // 2. Mixing Tanks
+  generateGroupedMixingTanks(pNum);
+
+  // 3. Coagulant Tanks 
+  generateStandardTanks('grid-coag', 'CT', ['1A','2A','3A','4A','5A','1B','2B','3B','4B','5B'], pNum, 'coagulant');
+
+  // 4. Storage Tanks 
+  const stLabels = Array.from({length: 10}, (_, i) => String(i + 1).padStart(2, '0'));
+  generateStandardTanks('grid-store', 'ST', stLabels, pNum, 'storage');
+
+  // 5. CDS System 
+  const [start, end] = plantLines[pNum];
+  const cdsLabels = [];
+  for(let i=start; i<=end; i++) cdsLabels.push(i + 'C');
+  generateStandardTanks('grid-cds', 'MT', cdsLabels, pNum, 'mixing'); 
+
+  // 6. Coating Tanks (Plant 6 and 7 ONLY)
+  const cardCoat = document.getElementById('card-coating');
+  if (pNum === 6 || pNum === 7) {
+    cardCoat.style.display = 'flex';
+    generateStandardTanks('grid-coat', 'CTK', ['1A','1B','2A','2B','3A','3B','4A','4B','5A','5B'], pNum, 'coating');
+  } else {
+    cardCoat.style.display = 'none';
+  }
+
+  // 7. Polymer Tanks (Plant 7 ONLY)
+  const cardPoly = document.getElementById('card-polymer');
+  if (pNum === 7) {
+    cardPoly.style.display = 'flex';
+    generateStandardTanks('grid-polymer', 'PT', ['1A', '2A', '1B', '2B'], pNum, 'polymer');
+  } else {
+    cardPoly.style.display = 'none';
+  }
+}
+
+// Initialize
+renderPlants();
+
+</script>
+
+</body>
+</html>

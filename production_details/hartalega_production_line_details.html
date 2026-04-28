@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hartalega Foresight - Detailed Dashboard</title>
+<title>Hartalega Foresight - Process Trend Dashboard</title>
 <link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png?v=2">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -26,23 +27,12 @@
   }
 
   .l-gridbg {
-    position: absolute;
+    position: fixed;
     inset: 0;
     background-image:
       linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px);
     background-size: 48px 48px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .l-glow {
-    position: absolute;
-    top: -200px;
-    right: -200px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(255,190,0,0.04) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
   }
@@ -55,9 +45,15 @@
     justify-content: space-between;
     padding: 16px 32px;
     border-bottom: 1px solid rgba(255,190,0,0.15);
-    background: rgba(10,22,40,0.9);
-    z-index: 10;
+    background: rgba(10,22,40,0.95);
+    z-index: 20;
     backdrop-filter: blur(10px);
+  }
+
+  .l-header-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
   }
 
   .l-back {
@@ -73,414 +69,490 @@
     transition: all 0.18s;
     text-decoration: none;
   }
-
-  .l-back:hover {
-    color: #FFBE00;
-    border-color: rgba(255,190,0,0.5);
-    background: rgba(255,190,0,0.06);
-  }
-
+  .l-back:hover { color: #FFBE00; border-color: rgba(255,190,0,0.5); background: rgba(255,190,0,0.06); }
   .l-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  .l-htitle {
+  /* Dropdowns */
+  .l-selector-group {
     display: flex;
     align-items: center;
     gap: 12px;
+    background: rgba(0,0,0,0.2);
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,190,0,0.1);
   }
-  
-  .l-htitle-text {
+
+  .l-select {
+    background: transparent;
+    color: #FFBE00;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    color: #fff;
-    letter-spacing: 1px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .l-select option { background: #0a1628; color: #e8eaf0; font-family: 'Inter', sans-serif; font-size: 14px;}
+
+  .l-divider { color: rgba(200,210,230,0.3); }
+
+  .l-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
 
-  .l-htitle-text span { color: #FFBE00; }
-
-  .l-hright { font-size: 12px; color: rgba(200,210,230,0.6); letter-spacing: 0.5px; display: flex; align-items: center;}
-  
-  .l-dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: #22c55e;
-    border-radius: 50%;
-    margin-right: 8px;
-    animation: blink 2s infinite;
+  .l-date-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(200,210,230,0.7);
   }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  /* Main Content Layout */
+  .l-date-select {
+    background: rgba(255,190,0,0.05);
+    color: #e8eaf0;
+    border: 1px solid rgba(255,190,0,0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* Main Content */
   .l-main {
     position: relative;
     z-index: 10;
     padding: 24px 32px 48px;
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
   }
 
-  /* KPI Ribbon */
-  .l-kpi-ribbon {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+  /* Product Banner */
+  .l-product-banner {
+    background: linear-gradient(90deg, rgba(34,197,94,0.1), transparent);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-left: 4px solid #22c55e;
+    padding: 16px 24px;
+    border-radius: 8px;
     margin-bottom: 24px;
-  }
-
-  .l-kpi-card {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,190,0,0.15);
-    border-radius: 8px;
-    padding: 16px 20px;
-    border-left: 3px solid #FFBE00;
-  }
-
-  .l-kpi-label {
-    font-size: 11px;
-    color: rgba(200,210,230,0.5);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-
-  .l-kpi-val {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #e8eaf0;
-    line-height: 1;
-  }
-
-  .l-kpi-val span {
-    font-size: 14px;
-    color: #FFBE00;
-    font-weight: 500;
-    margin-left: 4px;
-  }
-
-  .l-kpi-trend {
-    font-size: 11px;
-    margin-top: 6px;
     display: flex;
     align-items: center;
-    gap: 4px;
-  }
-  .l-kpi-trend.good { color: #22c55e; }
-  .l-kpi-trend.warn { color: #f59e0b; }
-
-  /* Section Headers */
-  .l-section-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-    margin-top: 32px;
-  }
-  .l-section-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: #FFBE00;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .l-section-line {
-    flex-grow: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(255,190,0,0.2), transparent);
-    margin-left: 16px;
-  }
-
-  /* Process Map Grid */
-  .l-process-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-
-  .l-zone-card {
-    background: rgba(10,22,40,0.6);
-    border: 1px solid rgba(255,190,0,0.15);
-    border-radius: 10px;
-    padding: 20px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .l-zone-card:hover {
-    border-color: rgba(255,190,0,0.4);
-    background: rgba(255,190,0,0.04);
-    transform: translateY(-2px);
-  }
-
-  .l-zone-header {
-    display: flex;
-    align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px dashed rgba(255,190,0,0.1);
   }
+  .l-product-info h3 { font-family: 'Rajdhani', sans-serif; font-size: 14px; color: rgba(200,210,230,0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;}
+  .l-product-info h1 { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; color: #fff;}
+  .l-product-status { font-size: 12px; color: #22c55e; display: flex; align-items: center; gap: 6px;}
+  .l-product-status span { display: inline-block; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px #22c55e;}
 
-  .l-zone-id {
-    font-size: 10px;
-    background: rgba(255,190,0,0.1);
-    color: #FFBE00;
-    padding: 2px 6px;
-    border-radius: 4px;
-    letter-spacing: 1px;
-    font-weight: 600;
-    margin-bottom: 6px;
-    display: inline-block;
-  }
-
-  .l-zone-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-  }
-
-  .l-zone-icon {
-    width: 36px;
-    height: 36px;
-    background: rgba(255,190,0,0.05);
-    border: 1px solid rgba(255,190,0,0.2);
-    border-radius: 8px;
+  /* Tabs */
+  .l-tabs {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255,190,0,0.1);
+    padding-bottom: 8px;
+    overflow-x: auto;
   }
-  .l-zone-icon svg { width: 18px; height: 18px; stroke: #FFBE00; fill: none; stroke-width: 1.5; }
-
-  .l-param-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .l-param-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-  }
-
-  .l-param-name { color: rgba(200,210,230,0.6); }
-  .l-param-val { font-weight: 500; font-family: 'Inter', sans-serif;}
-  
-  .val-normal { color: #22c55e; }
-  .val-warn { color: #f59e0b; }
-  .val-alert { color: #ef4444; }
-
-  .l-btn-details {
-    display: block;
-    width: 100%;
-    margin-top: 16px;
-    padding: 8px;
+  .l-tab {
+    padding: 8px 16px;
     background: transparent;
-    border: 1px solid rgba(255,190,0,0.3);
-    color: #FFBE00;
+    border: 1px solid transparent;
+    color: rgba(200,210,230,0.5);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
   }
-  .l-btn-details:hover {
+  .l-tab:hover { color: #FFBE00; background: rgba(255,190,0,0.05); }
+  .l-tab.active {
+    color: #FFBE00;
     background: rgba(255,190,0,0.1);
+    border-color: rgba(255,190,0,0.3);
   }
 
+  /* Dashboard Panels */
+  .l-panel { display: none; }
+  .l-panel.active { display: block; }
+
+  /* Charts Grid */
+  .l-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .l-chart-card {
+    background: rgba(10,22,40,0.7);
+    border: 1px solid rgba(255,190,0,0.15);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .l-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px dashed rgba(255,190,0,0.1);
+    padding-bottom: 12px;
+  }
+  .l-chart-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .l-chart-wrapper {
+    position: relative;
+    height: 250px;
+    width: 100%;
+  }
 </style>
 </head>
 <body>
 
 <div class="l-page">
   <div class="l-gridbg"></div>
-  <div class="l-glow"></div>
 
   <header class="l-header">
-    <a href="../hartalega_production_landing.html" class="l-back" style="text-decoration: none;">
-      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      Plant Overview
-    </a>
-    
-    <div class="l-htitle">
-      <div class="l-htitle-text">PLANT 1 <span>· LINE 1</span></div>
+    <div class="l-header-left">
+      <a href="../hartalega_production_landing.html" class="l-back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Overview
+      </a>
+      
+      <div class="l-selector-group">
+        <select class="l-select" id="plantSelect" onchange="handleNavigationChange()"></select>
+        <span class="l-divider">/</span>
+        <select class="l-select" id="lineSelect" onchange="handleNavigationChange()"></select>
+      </div>
     </div>
     
-    <div class="l-hright">
-      <span class="l-dot"></span> Line Running (Sync Mode)
+    <div class="l-header-right">
+      <div class="l-date-selector">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <select class="l-date-select" id="durationSelect" onchange="updateChartsTimeframe()">
+          <option value="6">Last 6 Hours</option>
+          <option value="12">Last 12 Hours</option>
+          <option value="24" selected>Last 24 Hours</option>
+          <option value="168">Last 7 Days</option>
+        </select>
+      </div>
     </div>
   </header>
 
   <main class="l-main">
     
-    <!-- Top KPI Overview -->
-    <div class="l-kpi-ribbon">
-      <div class="l-kpi-card">
-        <div class="l-kpi-label">Line Speed</div>
-        <div class="l-kpi-val">34,500 <span>pcs/hr</span></div>
-        <div class="l-kpi-trend good">↑ 2% vs Target</div>
+    <div class="l-product-banner">
+      <div class="l-product-info">
+        <h3>Current Running Product</h3>
+        <h1 id="productDisplay">Loading Product...</h1>
       </div>
-      <div class="l-kpi-card">
-        <div class="l-kpi-label">OEE (Overall Equip. Effectiveness)</div>
-        <div class="l-kpi-val">94.2 <span>%</span></div>
-        <div class="l-kpi-trend good">Optimal Range</div>
-      </div>
-      <div class="l-kpi-card">
-        <div class="l-kpi-label">Yield Rate</div>
-        <div class="l-kpi-val">98.7 <span>%</span></div>
-        <div class="l-kpi-trend warn">↓ 0.2% last hour</div>
-      </div>
-      <div class="l-kpi-card">
-        <div class="l-kpi-label">Energy Consumption</div>
-        <div class="l-kpi-val">412 <span>kWh</span></div>
-        <div class="l-kpi-trend good">Steady</div>
+      <div class="l-product-status">
+        <span></span> Live Telemetry Active
       </div>
     </div>
 
-    <div class="l-section-header">
-      <div class="l-section-title">Process Flow Monitoring</div>
-      <div class="l-section-line"></div>
+    <div class="l-tabs" id="tabsContainer">
+      <button class="l-tab active" onclick="switchTab('cleaning')">Cleaning Area</button>
+      <button class="l-tab" onclick="switchTab('coagulant')">Coagulant & Latex</button>
+      <button class="l-tab" onclick="switchTab('oven')">Drying & Curing Oven</button>
+      <button class="l-tab" onclick="switchTab('leaching')">Leaching & Beading</button>
+      <button class="l-tab" onclick="switchTab('postcuring')">Post-Curing</button>
+      <button class="l-tab" onclick="switchTab('postprocess')">Post-Process</button>
     </div>
 
-    <!-- Process Map Grid -->
-    <div class="l-process-grid">
-
-      <!-- Zone 1: Former Cleaning -->
-      <div class="l-zone-card">
-        <div class="l-zone-header">
-          <div>
-            <div class="l-zone-id">Z-01</div>
-            <div class="l-zone-title">Former Cleaning Area</div>
-          </div>
-          <div class="l-zone-icon">
-            <!-- Spray/Bubbles icon -->
-            <svg viewBox="0 0 24 24"><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-          </div>
-        </div>
-        <div class="l-param-list">
-          <div class="l-param-row"><span class="l-param-name">Acid Bath Conc.</span><span class="l-param-val val-normal">3.2%</span></div>
-          <div class="l-param-row"><span class="l-param-name">Alkaline Temp</span><span class="l-param-val val-normal">65°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Brush Motor Load</span><span class="l-param-val val-normal">42%</span></div>
-          <div class="l-param-row"><span class="l-param-name">Rinse Water Ph</span><span class="l-param-val val-warn">7.5</span></div>
-        </div>
-        <button class="l-btn-details">Sub-System Details</button>
-      </div>
-
-      <!-- Zone 2: Coagulant Dipping -->
-      <div class="l-zone-card">
-        <div class="l-zone-header">
-          <div>
-            <div class="l-zone-id">Z-02</div>
-            <div class="l-zone-title">Coagulant Dipping</div>
-          </div>
-          <div class="l-zone-icon">
-            <!-- Tank/Drop icon -->
-            <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-          </div>
-        </div>
-        <div class="l-param-list">
-          <div class="l-param-row"><span class="l-param-name">Tank Level</span><span class="l-param-val val-normal">88%</span></div>
-          <div class="l-param-row"><span class="l-param-name">Ca(NO3)2 Conc.</span><span class="l-param-val val-normal">18.5%</span></div>
-          <div class="l-param-row"><span class="l-param-name">Tank Temp</span><span class="l-param-val val-normal">55°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Circulation Pump</span><span class="l-param-val val-normal">Active</span></div>
-        </div>
-        <button class="l-btn-details">Sub-System Details</button>
-      </div>
-
-      <!-- Zone 3: Main Dipping -->
-      <div class="l-zone-card">
-        <div class="l-zone-header">
-          <div>
-            <div class="l-zone-id">Z-03</div>
-            <div class="l-zone-title">Nitrile Main Dipping</div>
-          </div>
-          <div class="l-zone-icon">
-            <!-- Tank waves icon -->
-            <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          </div>
-        </div>
-        <div class="l-param-list">
-          <div class="l-param-row"><span class="l-param-name">Tank Level</span><span class="l-param-val val-normal">92%</span></div>
-          <div class="l-param-row"><span class="l-param-name">Compound Temp</span><span class="l-param-val val-normal">28°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Total Solid Content</span><span class="l-param-val val-warn">29.1%</span></div>
-          <div class="l-param-row"><span class="l-param-name">Viscosity</span><span class="l-param-val val-normal">24 cps</span></div>
-        </div>
-        <button class="l-btn-details">Sub-System Details</button>
-      </div>
-
-      <!-- Zone 4: Pre-Leaching & Gelling -->
-      <div class="l-zone-card">
-        <div class="l-zone-header">
-          <div>
-            <div class="l-zone-id">Z-04</div>
-            <div class="l-zone-title">Leaching & Beading</div>
-          </div>
-          <div class="l-zone-icon">
-            <!-- Flow/Water icon -->
-            <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18" stroke-dasharray="2 4"/></svg>
-          </div>
-        </div>
-        <div class="l-param-list">
-          <div class="l-param-row"><span class="l-param-name">Water Temp (T1)</span><span class="l-param-val val-normal">70°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Water Temp (T2)</span><span class="l-param-val val-normal">72°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Overflow Rate</span><span class="l-param-val val-normal">15 L/min</span></div>
-          <div class="l-param-row"><span class="l-param-name">Beader Motor</span><span class="l-param-val val-normal">Sync</span></div>
-        </div>
-        <button class="l-btn-details">Sub-System Details</button>
-      </div>
-
-      <!-- Zone 5: Curing Ovens (Highlighted Request) -->
-      <div class="l-zone-card" style="border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 0 15px rgba(245, 158, 11, 0.05);">
-        <div class="l-zone-header">
-          <div>
-            <div class="l-zone-id" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">Z-05</div>
-            <div class="l-zone-title">Vulcanization Ovens</div>
-          </div>
-          <div class="l-zone-icon" style="border-color: #f59e0b;">
-            <!-- Thermometer/Heat icon -->
-            <svg viewBox="0 0 24 24" stroke="#f59e0b"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
-          </div>
-        </div>
-        <div class="l-param-list">
-          <div class="l-param-row"><span class="l-param-name">Oven Zone A</span><span class="l-param-val val-normal">110°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Oven Zone B</span><span class="l-param-val val-normal">125°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Oven Zone C</span><span class="l-param-val val-normal">135°C</span></div>
-          <div class="l-param-row"><span class="l-param-name">Exhaust Blowers</span><span class="l-param-val val-normal">1450 RPM</span></div>
-        </div>
-        <button class="l-btn-details" style="color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);">Sub-System Details</button>
-      </div>
-
-      <!-- Zone 6: Auto-Stripping -->
-      <div class="l-zone-card">
-        <div class="l-zone-header">
-          <div>
-            <div class="l-zone-id">Z-06</div>
-            <div class="l-zone-title">Auto-Stripping Area</div>
-          </div>
-          <div class="l-zone-icon">
-            <!-- Layers/Extraction icon -->
-            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          </div>
-        </div>
-        <div class="l-param-list">
-          <div class="l-param-row"><span class="l-param-name">Air Jet Pressure</span><span class="l-param-val val-normal">6.5 Bar</span></div>
-          <div class="l-param-row"><span class="l-param-name">Stripping Arms</span><span class="l-param-val val-normal">Active</span></div>
-          <div class="l-param-row"><span class="l-param-name">Defect Detect (AI)</span><span class="l-param-val val-normal">Online</span></div>
-          <div class="l-param-row"><span class="l-param-name">Ejection Count</span><span class="l-param-val val-normal">574 /min</span></div>
-        </div>
-        <button class="l-btn-details">Sub-System Details</button>
-      </div>
-
+    <div id="panel-cleaning" class="l-panel active">
+      <div class="l-charts-grid" id="cleaningChartsGrid"></div>
     </div>
+
+    <div id="panel-coagulant" class="l-panel">
+      <div class="l-charts-grid" id="coagulantChartsGrid"></div>
+    </div>
+
+    <div id="panel-oven" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
+    <div id="panel-leaching" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
+    <div id="panel-postcuring" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
+    <div id="panel-postprocess" class="l-panel"><p style="color:rgba(200,210,230,0.5); text-align:center; padding:40px;">No sensors integrated yet.</p></div>
+
   </main>
 </div>
 
+<script>
+// --- 1. PLANT & LINE NAVIGATION LOGIC ---
+const config = {
+  plants: 9,
+  linesPerPlant: 12
+};
+
+function initSelectors() {
+  const pSelect = document.getElementById('plantSelect');
+  const lSelect = document.getElementById('lineSelect');
+  
+  for(let i=1; i<=config.plants; i++) {
+    pSelect.options.add(new Option(`PLANT ${i}`, i));
+  }
+  
+  const hash = window.location.hash;
+  const match = hash.match(/#P(\d+)L(\d+)/);
+  
+  let pNum = 1, lNum = 1;
+  if(match) {
+    pNum = parseInt(match[1]);
+    lNum = parseInt(match[2]);
+  }
+  
+  pSelect.value = pNum;
+  populateLines(pNum, lNum);
+  document.title = `Hartalega Foresight - P${pNum} L${lNum} Trends`;
+}
+
+function populateLines(plantNum, selectLine) {
+  const lSelect = document.getElementById('lineSelect');
+  lSelect.innerHTML = '';
+  const start = ((plantNum - 1) * config.linesPerPlant) + 1;
+  const end = start + config.linesPerPlant - 1;
+  
+  for(let i=start; i<=end; i++) {
+    lSelect.options.add(new Option(`LINE ${i}`, i));
+  }
+  
+  // Also add RND lines if it's plant 8 (based on previous logic)
+  if(plantNum == 8) {
+    lSelect.options.add(new Option(`LINE 105 (RND)`, 105));
+  }
+  
+  if(selectLine) lSelect.value = selectLine;
+}
+
+function handleNavigationChange() {
+  const pSelect = document.getElementById('plantSelect');
+  const lSelect = document.getElementById('lineSelect');
+  
+  if(event.target.id === 'plantSelect') {
+    populateLines(pSelect.value); // Re-populate lines if plant changes
+  }
+  
+  // Update URL hash without reloading page
+  window.history.pushState(null, null, `#P${pSelect.value}L${lSelect.value}`);
+  document.title = `Hartalega Foresight - P${pSelect.value} L${lSelect.value} Trends`;
+  
+  // Re-fetch product and re-draw charts for the new line
+  fetchProduct();
+  renderAllCharts();
+}
+
+// --- 2. PRODUCT FETCH LOGIC ---
+async function fetchProduct() {
+  const display = document.getElementById('productDisplay');
+  try {
+    // Attempt to fetch from the specific directory
+    const response = await fetch('../resource/product_masterlist.txt');
+    if (!response.ok) throw new Error('File not found');
+    const text = await response.text();
+    
+    // Simulate finding the product for this line (For demo, we just pick a random line from the file)
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    if(lines.length > 0) {
+       // Random selection for demo purposes
+       const randomProduct = lines[Math.floor(Math.random() * lines.length)];
+       display.innerText = randomProduct;
+    } else {
+       display.innerText = "Nitrile Examination Glove (3.5g) - Standard Blue";
+    }
+  } catch (error) {
+    // Fallback if file doesn't exist locally yet
+    console.warn("Could not load product_masterlist.txt, using fallback.");
+    const fallbacks = [
+      "Nitrile Examination Glove (3.2g) - Cobalt Blue",
+      "Latex Surgical Glove (Powder-Free) - Natural",
+      "Nitrile Industrial Glove (4.5g) - Black"
+    ];
+    display.innerText = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  }
+}
+
+// --- 3. TAB LOGIC ---
+function switchTab(tabId) {
+  document.querySelectorAll('.l-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.l-panel').forEach(p => p.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById(`panel-${tabId}`).classList.add('active');
+}
+
+// --- 4. CHARTS CONFIGURATION & RENDERING ---
+const chartInstances = []; // Keep track to destroy old ones
+
+// Structure defining the dashboards
+const processData = {
+  cleaning: {
+    "Acid Tank": ["CAA Acid Flow Rate (L/hr)", "Acid Strength (%)", "Temp (°C)"],
+    "Acid Neutralizer Tank": ["Raw Water Flow Rate (L/hr)", "NaOH Flow Rate (L/hr)", "Alkali Strength (%)", "Temp (°C)"],
+    "Acid Shower": ["Raw Water Flow Rate (L/hr)"],
+    "Alkaline Tank": ["Raw Water Flow Rate (L/hr)", "CAA Alkali Flow Rate (L/hr)", "Alkali Strength (%)", "Temp (°C)"],
+    "Hot Bath": ["Raw Water Flow Rate (L/hr)", "Temperature (°C)"],
+    "Cleaning Brush": ["Raw Water Flow Rate (L/hr)", "Status (1=On, 0=Off)"],
+    "Hot Rinse": ["Temperature (°C)", "Status (1=On, 0=Off)"],
+    "Hot Water": ["Temperature (°C)", "Hot Water Flow Rate (L/hr)", "pH"],
+    "Hot Water Blower": ["Status (1=On, 0=Off)"]
+  },
+  coagulant: {
+    "Coagulant": ["Temperature (°C)", "Coagulant Level (mm)", "Coagulant pH", "CN Strength (%)", "PFCA Concentration (%)", "Pump Speed (Hz)", "Stirrer Speed (Hz)"],
+    "Latex": ["Temperature (°C)", "Latex Level (mm)", "Latex pH", "TSC (%)", "Stirrer Speed (Hz)"]
+  }
+};
+
+// Colors for multiple lines in a single chart
+const chartColors = [
+  '#FFBE00', '#22c55e', '#3b82f6', '#f43f5e', '#a855f7', '#06b6d4', '#f97316'
+];
+
+// Helper to generate mock time-series data
+function generateMockData(hours, count) {
+  const data = [];
+  const labels = [];
+  const now = new Date();
+  
+  for(let i=count; i>=0; i--) {
+    let d = new Date(now.getTime() - (i * (hours/count) * 60 * 60 * 1000));
+    labels.push(d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+    
+    // Generate somewhat stable random numbers
+    let base = 50 + (Math.random() * 20);
+    data.push(base + (Math.random() * 5 - 2.5));
+  }
+  return { labels, data };
+}
+
+function buildChartsForSection(sectionKey, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  
+  const sections = processData[sectionKey];
+  const hours = parseInt(document.getElementById('durationSelect').value);
+  const dataPoints = hours > 24 ? 40 : 20; // more points for longer durations
+  
+  // Global defaults for Chart.js
+  Chart.defaults.color = 'rgba(200,210,230,0.6)';
+  Chart.defaults.font.family = 'Inter';
+
+  Object.keys(sections).forEach((processName, index) => {
+    const parameters = sections[processName];
+    
+    // Create HTML structure
+    const card = document.createElement('div');
+    card.className = 'l-chart-card';
+    card.innerHTML = `
+      <div class="l-chart-header">
+        <div class="l-chart-title">${processName}</div>
+      </div>
+      <div class="l-chart-wrapper">
+        <canvas id="chart-${sectionKey}-${index}"></canvas>
+      </div>
+    `;
+    container.appendChild(card);
+    
+    // Prepare datasets
+    const datasets = [];
+    let commonLabels = [];
+    
+    parameters.forEach((param, pIdx) => {
+      const isStatus = param.includes('Status');
+      const mock = generateMockData(hours, dataPoints);
+      if(pIdx === 0) commonLabels = mock.labels; // use first set of labels
+      
+      let finalData = mock.data;
+      if (isStatus) {
+         // Force binary 0 or 1 for statuses
+         finalData = finalData.map(v => Math.random() > 0.1 ? 1 : 0); 
+      }
+      
+      datasets.push({
+        label: param,
+        data: finalData,
+        borderColor: chartColors[pIdx % chartColors.length],
+        backgroundColor: chartColors[pIdx % chartColors.length] + '20', // Add transparency
+        borderWidth: 2,
+        pointRadius: 0, // hide points for cleaner trend lines
+        tension: isStatus ? 0 : 0.3, // stepped lines for status, smooth for analog
+        stepped: isStatus ? true : false
+      });
+    });
+
+    // Render Chart
+    const ctx = document.getElementById(`chart-${sectionKey}-${index}`).getContext('2d');
+    const newChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: commonLabels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, padding: 15, font: { size: 11 } }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(10,22,40,0.9)',
+            titleFont: { family: 'Rajdhani', size: 14 },
+            borderColor: 'rgba(255,190,0,0.3)',
+            borderWidth: 1
+          }
+        },
+        scales: {
+          y: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            beginAtZero: false
+          },
+          x: {
+            grid: { display: false }
+          }
+        }
+      }
+    });
+    
+    chartInstances.push(newChart);
+  });
+}
+
+function renderAllCharts() {
+  // Destroy old charts to prevent memory leaks and visual glitches
+  chartInstances.forEach(chart => chart.destroy());
+  chartInstances.length = 0;
+  
+  buildChartsForSection('cleaning', 'cleaningChartsGrid');
+  buildChartsForSection('coagulant', 'coagulantChartsGrid');
+}
+
+function updateChartsTimeframe() {
+  renderAllCharts(); // Re-draw with new time duration
+}
+
+// --- INIT ---
+window.onload = () => {
+  initSelectors();
+  fetchProduct();
+  renderAllCharts();
+};
+
+</script>
 </body>
 </html>

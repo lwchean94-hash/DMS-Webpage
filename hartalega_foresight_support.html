@@ -300,8 +300,8 @@
 </div>
 
 <script>
-  // This is where the Google Apps Script Web App URL will go in the next step.
-  // const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSUsSFlcBHXGry5XxZQNd3Dt1vYJ-u5LmqM7Y4Gsjh5s8zIS7nLs00QTfornvG4WqTQw/exec";
+  // Paste your Google Script URL inside the quotes below
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_LONG_COPIED_ID_HERE/exec";
 
   document.getElementById('requestForm').addEventListener('submit', function(e) {
     e.preventDefault(); // Prevent page reload
@@ -310,9 +310,9 @@
     btn.disabled = true;
     btn.innerHTML = 'Sending...';
 
-    // Capture the data (Removed Priority)
+    // Capture the data
     const requestData = {
-      timestamp: new Date().toLocaleString('en-GB'), // Captures current exact time
+      timestamp: new Date().toLocaleString('en-GB'),
       name: document.getElementById('reqName').value,
       department: document.getElementById('reqDept').value,
       type: document.getElementById('reqType').value,
@@ -320,24 +320,13 @@
       status: "Pending"
     };
 
-    /* ========================================================================
-    PHASE 2: GOOGLE SHEETS INTEGRATION
-    Once your Google Sheet is ready, we will uncomment this block below 
-    to actually send the data. For now, we simulate a successful 1-second send.
-    ========================================================================
-    
+    // Send data to Google Sheets
     fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
       body: JSON.stringify(requestData)
     })
     .then(response => response.json())
-    .then(data => { ... success logic ... })
-    .catch(error => { ... error logic ... });
-    
-    */
-
-    // Simulated network request (1 second delay)
-    setTimeout(() => {
+    .then(data => {
       // 1. Show Success Toast
       const toast = document.getElementById('successToast');
       toast.classList.add('show');
@@ -349,8 +338,12 @@
       document.getElementById('requestForm').reset();
       btn.disabled = false;
       btn.innerHTML = 'Submit Request <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
-
-    }, 1000);
+    })
+    .catch(error => {
+      alert("Error sending request. Please try again.");
+      btn.disabled = false;
+      btn.innerHTML = 'Submit Request';
+    });
   });
 </script>
 

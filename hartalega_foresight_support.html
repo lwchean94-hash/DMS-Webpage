@@ -237,18 +237,35 @@
           <label class="form-label">Department <span>*</span></label>
           <select class="form-select" id="reqDept" required>
             <option value="" disabled selected>— Select Department —</option>
-            <option value="Compounding">Compounding</option>
-            <option value="Production">Production</option>
-            <option value="Quality Assurance">Quality Assurance (QA)</option>
-            <option value="Engineering Utility">Engineering Utility</option>
-            <option value="Operation Excellence">Operation Excellence (OE)</option>
-            <option value="Management">Management</option>
-            <option value="IT / Systems">IT / Systems</option>
-            <option value="Other">Other</option>
+            <option value="CDD">CDD</option>
+            <option value="CNI">CNI</option>
+            <option value="CRC">CRC</option>
+            <option value="ENG">ENG</option>
+            <option value="FAC">FAC</option>
+            <option value="FDD">FDD</option>
+            <option value="FIN">FIN</option>
+            <option value="GAD">GAD</option>
+            <option value="GRC">GRC</option>
+            <option value="HMR">HMR</option>
+            <option value="HSE">HSE</option>
+            <option value="IAD">IAD</option>
+            <option value="MGS">MGS</option>
+            <option value="MIS">MIS</option>
+            <option value="OEX">OEX</option>
+            <option value="PNS">PNS</option>
+            <option value="PRD">PRD</option>
+            <option value="PROC">PROC</option>
+            <option value="PRT">PRT</option>
+            <option value="PTD">PTD</option>
+            <option value="QAS">QAS</option>
+            <option value="RND">RND</option>
+            <option value="SCM">SCM</option>
+            <option value="SNM">SNM</option>
+            <option value="WHS">WHS</option>
           </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group full">
           <label class="form-label">Request Type <span>*</span></label>
           <select class="form-select" id="reqType" required>
             <option value="" disabled selected>— Select Type —</option>
@@ -257,15 +274,6 @@
             <option value="Dashboard Access">Dashboard Access Request</option>
             <option value="Data Inquiry">Data / Telemetry Inquiry</option>
             <option value="General Feedback">General Feedback</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Priority Level</label>
-          <select class="form-select" id="reqPriority">
-            <option value="Low">Low - Whenever possible</option>
-            <option value="Medium" selected>Medium - Standard review</option>
-            <option value="High">High - Impeding workflow</option>
           </select>
         </div>
 
@@ -302,13 +310,12 @@
     btn.disabled = true;
     btn.innerHTML = 'Sending...';
 
-    // Capture the data
+    // Capture the data (Removed Priority)
     const requestData = {
       timestamp: new Date().toLocaleString('en-GB'), // Captures current exact time
       name: document.getElementById('reqName').value,
       department: document.getElementById('reqDept').value,
       type: document.getElementById('reqType').value,
-      priority: document.getElementById('reqPriority').value,
       details: document.getElementById('reqDetails').value,
       status: "Pending"
     };

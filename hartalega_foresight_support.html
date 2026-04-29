@@ -320,13 +320,15 @@
       status: "Pending"
     };
 
-    // Send data to Google Sheets
+   // Send data to Google Sheets (Updated for CORS)
     fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
       body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(response => {
       // 1. Show Success Toast
       const toast = document.getElementById('successToast');
       toast.classList.add('show');
@@ -340,7 +342,8 @@
       btn.innerHTML = 'Submit Request <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
     })
     .catch(error => {
-      alert("Error sending request. Please try again.");
+      console.error(error); // Logs the exact error to the console for debugging
+      alert("Error sending request. Please ensure you are connected to the network.");
       btn.disabled = false;
       btn.innerHTML = 'Submit Request';
     });

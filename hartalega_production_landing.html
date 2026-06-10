@@ -75,6 +75,7 @@
   /* --- Main Category Grid Styles --- */
   .p-category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 900px; margin: 0 auto 32px; }
   .p-category-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,190,0,0.15); border-radius: 12px; padding: 28px 24px; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; text-decoration: none;}
+  .live-link::after { content: ''; position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,.75); }
   .p-category-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background 0.25s; }
   .p-category-card:hover { background: rgba(255,190,0,0.05); border-color: rgba(255,190,0,0.4); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
   .p-category-card:hover::before { background: #FFBE00; }
@@ -116,31 +117,6 @@
   .p-placeholder svg { width: 32px; height: 32px; stroke: rgba(255,190,0,0.2); fill: none; stroke-width: 1.5; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
   
   .p-footer { position: relative; z-index: 10; text-align: center; padding: 14px 32px 20px; border-top: 1px solid rgba(255,190,0,0.08); font-size: 11px; color: rgba(200,210,230,0.25); letter-spacing: 0.5px; }
-
-  /* --- Connection Status Styles --- */
-  .p-plant-status {
-    position: absolute;
-    top: 42px; 
-    right: 14px; 
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 9px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-  
-  .p-plant-status.online { color: #22c55e; }
-  .p-plant-status.offline { color: #ef4444; }
-  
-  .p-status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-  }
-  .online .p-status-dot { background: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, 0.6); }
-  .offline .p-status-dot { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
 
   .p-plant-card.is-offline { opacity: 0.7; border-color: rgba(239, 68, 68, 0.2); }
   .p-plant-card.is-offline:hover { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.05); }
@@ -209,7 +185,7 @@
         <div class="p-category-desc">Historical logs, technician interventions, maintenance dispatch, and system events.</div>
       </a>
 
-      <a class="p-category-card" href="#">
+      <a class="p-category-card live-link" onclick="showCtqModule()">
         <div class="p-category-icon">
           <svg viewBox="0 0 24 24"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="4"/></svg>
         </div>
@@ -233,14 +209,26 @@
 
     <div class="p-plants-grid" id="plantGrid"></div>
 
-    <div class="p-step-label" id="linesLabel" style="display:none;">Select a production line</div>
+    <div class="p-step-label" id="linesLabel" style="display:none;">Select main dashboard navigation or production line</div>
     <div class="p-lines-section" id="linesSection">
       <div class="p-placeholder" id="linePlaceholder">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-        Select a plant above to view its production lines
+        Select a plant above to view its dashboard navigation and production lines
       </div>
       <div id="linesGrid" style="display:none;"></div>
     </div>
+  </section>
+
+  <section id="ctqModuleView" class="p-body" style="display:none;">
+    <div class="p-inner-back-wrapper">
+      <div class="p-inner-back" onclick="showMainMenu()">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Modules
+      </div>
+    </div>
+
+    <div class="p-step-label">Select CTQ Plant</div>
+    <div class="p-plants-grid" id="ctqPlantGrid"></div>
   </section>
 
   <footer class="p-footer">
@@ -253,12 +241,14 @@
 function showDashboardModule() {
   document.getElementById('mainMenuView').style.display = 'none';
   document.getElementById('dashboardModuleView').style.display = 'block';
+  document.getElementById('ctqModuleView').style.display = 'none';
   document.getElementById('heroTitle').innerHTML = 'Select <span>Plant</span> &amp; Line';
-  document.getElementById('heroDesc').innerText = 'Choose a plant to view its production lines, then select a line to open its dashboard.';
+  document.getElementById('heroDesc').innerText = 'Choose a plant to open its main dashboard navigation or line-level view.';
 }
 
 function showMainMenu() {
   document.getElementById('dashboardModuleView').style.display = 'none';
+  document.getElementById('ctqModuleView').style.display = 'none';
   document.getElementById('mainMenuView').style.display = 'block';
   document.getElementById('heroTitle').innerHTML = 'Production <span>Modules</span>';
   document.getElementById('heroDesc').innerText = 'Select an area below to access dashboards, reports, activity logs, or efficiency overviews.';
@@ -268,6 +258,15 @@ function showMainMenu() {
   document.getElementById('linesLabel').style.display = 'none';
   document.getElementById('linePlaceholder').style.display = 'block';
   document.getElementById('linesGrid').style.display = 'none';
+}
+
+function showCtqModule() {
+  document.getElementById('mainMenuView').style.display = 'none';
+  document.getElementById('dashboardModuleView').style.display = 'none';
+  document.getElementById('ctqModuleView').style.display = 'block';
+  document.getElementById('heroTitle').innerHTML = 'CTQ <span>Plant Navigation</span>';
+  document.getElementById('heroDesc').innerText = 'Select a plant to open the live CTQ overview dashboard.';
+  renderCtqPlants();
 }
 
 
@@ -294,19 +293,10 @@ function renderPlants() {
     const count = (e - s + 1) + p.extra.length;
     const hasRnd = p.extra.length > 0;
     
-    // Status Logic
-    const isOnline = p.status === 'online';
-    const statusClass = isOnline ? 'online' : 'offline';
-    const statusText = isOnline ? 'Connected' : 'Disconnected';
-    const offlineClass = isOnline ? '' : ' is-offline';
-
     const card = document.createElement('div');
-    card.className = 'p-plant-card' + offlineClass;
+    card.className = 'p-plant-card';
     card.id = 'plant-'+p.num;
     card.innerHTML = `
-      <div class="p-plant-status ${statusClass}">
-        <div class="p-status-dot"></div>${statusText}
-      </div>
       <div class="p-plant-count">${count} lines</div>
       <div class="p-plant-num" style="margin-top: 14px;">P${p.num}</div>
       <div class="p-plant-name">Plant ${p.num}${hasRnd ? '<span class="p-rnd-badge">RND</span>' : ''}</div>
@@ -333,24 +323,26 @@ function renderLines(p) {
   grid.className = 'p-lines-grid';
   grid.innerHTML = '';
 
-  const isPlantOffline = p.status === 'offline';
+  document.getElementById('linesLabel').innerText = 'Select main dashboard navigation or production line';
+  renderMainDashboardButton(p, grid);
+  renderLegacyLineButtons(p, grid);
+}
 
-  // --- Plant Main Dashboard Button (Hash Routing) ---
-  const mainBtn = document.createElement('div');
-  mainBtn.className = 'p-line-btn';
-  mainBtn.style.gridColumn = '1 / -1'; 
-  mainBtn.style.borderColor = 'rgba(34, 197, 94, 0.4)';
-  mainBtn.style.background = 'rgba(34, 197, 94, 0.08)';
-  mainBtn.innerHTML = `
-    <div class="ln" style="color: #22c55e;">MAIN</div>
-    <div class="lb">Plant ${p.num} Main Dashboard</div>
+function renderMainDashboardButton(p, grid) {
+  const btn = document.createElement('div');
+  btn.className = 'p-line-btn';
+  btn.innerHTML = `
+    <div class="ln">Main Dashboard Navigation</div>
+    <div class="lb">Plant ${p.num} &middot; Dashboard Suite</div>
   `;
-  mainBtn.onclick = () => {
-    // Updates using Hash instead of separate files
+  btn.onclick = () => {
     window.location.href = `production_details/hartalega_production_plant_main.html#P${p.num}`;
   };
-  grid.appendChild(mainBtn);
+  grid.appendChild(btn);
+}
 
+function renderLegacyLineButtons(p, grid) {
+  const isPlantOffline = p.status === 'offline';
   const [s,e] = p.lines;
   
   // Generate standard production lines (Hash Routing)
@@ -388,10 +380,28 @@ function renderLines(p) {
     `;
    btn.onclick = () => {
       // Updates using Hash instead of separate files
-      window.location.href = `production_details/hartalega_production_line_details.html#P${p.num}L${i}`;
+      window.location.href = `production_details/hartalega_production_line_details.html#P${p.num}L${ex.num}`;
     };
     grid.appendChild(btn);
   });
+}
+
+function renderCtqPlants() {
+  const grid = document.getElementById('ctqPlantGrid');
+  grid.innerHTML = '';
+  for (let plantNo = 1; plantNo <= 9; plantNo++) {
+    const card = document.createElement('div');
+    card.className = 'p-plant-card live-link';
+    card.innerHTML = `
+      <div class="p-plant-num">P${plantNo}</div>
+      <div class="p-plant-name">Plant ${plantNo}</div>
+      <div class="p-plant-lines">CTQ Overview Enhanced</div>
+    `;
+    card.onclick = () => {
+      window.location.href = `https://dms.hartalega.com.my/foresight/d/dfm14qhptgrggb/ctq-overview-enhanced?orgId=1&from=now-6h&to=now&timezone=browser&var-plantNo=${plantNo}`;
+    };
+    grid.appendChild(card);
+  }
 }
 
 // Initialize on page load

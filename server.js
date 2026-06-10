@@ -150,14 +150,18 @@ function addVersion(productId, payload) {
   const product = db.prepare('SELECT id FROM products WHERE id = ?').get(productId);
   if (!product) throw new Error('Product does not exist.');
 
-  const versionType = String(payload.versionType || 'PERMANENT').trim();
+  const versionTypeRaw = String(payload.versionType || 'PERMANENT').trim().toUpperCase();
+  if (!['PERMANENT', 'CHANGE REQUEST', 'DEVIATION REQUEST (DR)', 'DR'].includes(versionTypeRaw)) {
+    throw new Error('Version Type must be PERMANENT or CHANGE REQUEST.');
+  }
+  const versionType = (versionTypeRaw === 'DEVIATION REQUEST (DR)' || versionTypeRaw === 'DR' || versionTypeRaw === 'CHANGE REQUEST') ? 'CHANGE REQUEST' : 'PERMANENT';
   const date = String(payload.date || payload.effectiveDate || '').trim();
   const revno = Number(payload.revno ?? payload.revisionNo);
   const endDate = String(payload.endDate || '').trim();
   if (!date) throw new Error('Effective Date is required.');
   if (!Number.isFinite(revno)) throw new Error('Revision No. is required.');
-  if (versionType === 'DEVIATION REQUEST (DR)' && !endDate) {
-    throw new Error('End Date is required for DEVIATION REQUEST (DR).');
+  if (versionType === 'CHANGE REQUEST' && !endDate) {
+    throw new Error('End Date is required for CHANGE REQUEST.');
   }
 
   const time = nowIso();

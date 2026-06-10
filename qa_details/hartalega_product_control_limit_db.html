@@ -62,6 +62,17 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .select-wrap select{appearance:none;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 36px 7px 12px;border-radius:6px;cursor:pointer;min-width:300px;outline:none;}
 .select-wrap select:focus{border-color:var(--gold);}
 .select-wrap::after{content:'▾';position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--gold2);pointer-events:none;font-size:12px;}
+.product-combobox{position:relative;min-width:340px;}
+.product-combobox input{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 36px 7px 12px;border-radius:6px;min-width:340px;outline:none;}
+.product-combobox input:focus{border-color:var(--gold);}
+.product-combobox::after{content:'▾';position:absolute;right:11px;top:17px;transform:translateY(-50%);color:var(--gold2);pointer-events:none;font-size:12px;}
+.product-combobox-list{position:absolute;z-index:80;left:0;right:0;top:38px;max-height:260px;overflow:auto;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;box-shadow:0 12px 26px rgba(0,0,0,.35);display:none;}
+.product-combobox-list.open{display:block;}
+.product-combobox-option{padding:8px 11px;font-size:13px;color:var(--text);cursor:pointer;border-bottom:1px solid rgba(255,190,0,.06);}
+.product-combobox-option:last-child{border-bottom:none;}
+.product-combobox-option:hover,.product-combobox-option.active{background:rgba(255,190,0,.1);color:var(--gold);}
+.product-combobox-option.empty{cursor:default;color:var(--muted);}
+.product-combobox select{display:none;}
 
 /* MAIN */
 .main{position:relative;z-index:1;padding:24px 28px;max-width:1400px;}
@@ -127,20 +138,10 @@ table.vtable tbody td{padding:10px 14px;font-size:13px;color:var(--text);vertica
 .ptable input[type=number],.ptable input[type=text]{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:5px 8px;border-radius:5px;outline:none;width:100%;}
 .ptable input:focus{border-color:var(--gold);}
 .ptable .td-na{color:rgba(200,215,235,0.2);font-size:12px;text-align:center;}
-.ptable .col-drag{width:28px;text-align:center;cursor:grab;color:var(--muted);font-size:16px;user-select:none;}
-.ptable .col-drag:active{cursor:grabbing;}
+.ptable .col-no{width:56px;text-align:center;color:var(--gold2);font-weight:600;}
 .ptable .col-proc{width:170px;}
 .ptable .col-unit{min-width:140px;}
 .ptable .col-val{width:100px;}
-.ptable .col-act{width:36px;}
-
-/* Drag-over highlight */
-tr.drag-over td{background:rgba(255,190,0,0.08)!important;}
-tr.dragging{opacity:0.4;}
-
-/* Section header rows in process table */
-.ptable tr.sec-row td{background:rgba(255,190,0,0.05);padding:6px 10px;}
-.ptable tr.sec-row .sec-label{font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:.8px;color:var(--gold);text-transform:uppercase;}
 
 /* View modal */
 .view-ptable{width:100%;border-collapse:collapse;}
@@ -202,11 +203,18 @@ tr.dragging{opacity:0.4;}
   </div>
 
   <div class="toolbar-row">
-    <div class="select-wrap">
+    <div class="product-combobox" id="productCombobox">
+      <input type="text" id="productComboInput" placeholder="Type or select a product..." autocomplete="off" role="combobox" aria-expanded="false" aria-controls="productComboList" oninput="onProductComboInput()" onfocus="openProductCombo()" onkeydown="onProductComboKeydown(event)" data-tip-key="productSelect"/>
       <select id="productSelect" onchange="onProductChange()">
         <option value="">— Select a product —</option>
       </select>
+      <div class="product-combobox-list" id="productComboList" role="listbox"></div>
     </div><span class="help-dot" data-tip-key="productSelect">?</span>
+    <div class="select-wrap">
+      <select id="lineFilterSelect" onchange="onLineFilterChange()">
+        <option value="">All Lines</option>
+      </select>
+    </div><span class="help-dot" data-tip-key="lineFilter">?</span>
     <button class="btn btn-outline" onclick="openAddProduct()" data-tip-key="addProduct">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add Product
@@ -219,12 +227,16 @@ tr.dragging{opacity:0.4;}
       <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Bulk Upload Excel
     </button>
-    <button class="btn btn-outline demo-only" onclick="exportDemoData()" data-tip-key="exportData">Export Demo Data</button>
-    <button class="btn btn-outline demo-only" onclick="document.getElementById('importDataFile').click()" data-tip-key="importData">Import Demo Data</button>
+    <button class="btn btn-outline" onclick="downloadUploadTemplate()" data-tip-key="downloadUploadTemplate">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Upload Format
+    </button>
+    <button class="btn btn-outline no-sqlite-only" onclick="openSaveFile()" data-tip-key="openSaveFile">Load File</button>
+    <button class="btn btn-outline" onclick="downloadSaveCopy()" data-tip-key="downloadSaveCopy">Download Save Copy</button>
     <span class="toolbar-spacer"></span>
     <button class="btn btn-outline" onclick="openTooltipEditor()" data-tip-key="editTooltips">Edit Tooltips</button>
     <input type="file" id="bulkUploadFile" class="file-input" accept=".xlsx,.xls" onchange="handleBulkFile(event)"/>
-    <input type="file" id="importDataFile" class="file-input" accept=".json" onchange="importDemoData(event)"/>
+    <input type="file" id="importDataFile" class="file-input" accept=".json" onchange="importSaveFileFallback(event)"/>
   </div>
 </div>
 
@@ -249,6 +261,7 @@ tr.dragging{opacity:0.4;}
             <th>Plant No.</th>
             <th>Lines</th>
             <th>Last Edited</th>
+            <th>By</th>
             <th>Remarks</th>
             <th style="width:100px;">Actions</th>
           </tr>
@@ -309,7 +322,7 @@ tr.dragging{opacity:0.4;}
             <label>Version Type * <span class="help-dot" data-tip-key="versionType">?</span></label>
             <select id="v_type" onchange="toggleVersionType()">
               <option value="PERMANENT">PERMANENT</option>
-              <option value="DEVIATION REQUEST (DR)">DEVIATION REQUEST (DR)</option>
+              <option value="CHANGE REQUEST">CHANGE REQUEST</option>
             </select>
           </div>
           <div class="form-field" id="endDateField" style="display:none;">
@@ -341,10 +354,6 @@ tr.dragging{opacity:0.4;}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div class="form-section-title" style="margin-bottom:0;border-bottom:none;">Process Control Limits <span class="help-dot" data-tip-key="processLimits">?</span></div>
           <div style="display:flex;gap:8px;">
-            <button class="btn btn-green btn-sm" onclick="addSectionRow()">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Section
-            </button>
             <button class="btn btn-outline btn-sm" onclick="resetParamRows()" title="Reset to default parameters">
               <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
               Reset to Default
@@ -352,25 +361,17 @@ tr.dragging{opacity:0.4;}
           </div>
         </div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">
-          Drag <span style="color:var(--gold);">⠿</span> to reorder rows. Click
-          <span style="color:var(--success);">+</span> to add a parameter row below.
-          Click <span style="color:var(--danger);">✕</span> to delete a row. Leave Min/Max blank if not applicable.
+          The parameter sequence follows the default master list. Edit Min/Max values as needed and leave them blank if not applicable.
         </p>
         <div class="ptable-wrap">
           <table class="ptable">
             <thead>
               <tr>
-                <th class="col-drag" title="Drag to reorder"></th>
+                <th class="col-no">No</th>
                 <th class="col-proc">Process</th>
                 <th class="col-unit">Parameter / Unit</th>
                 <th class="col-val">Min</th>
                 <th class="col-val">Max</th>
-                <th class="col-act" title="Add parameter row below">
-                  <svg style="width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </th>
-                <th class="col-act" title="Delete row">
-                  <svg style="width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </th>
               </tr>
             </thead>
             <tbody id="processTableBody"></tbody>
@@ -435,108 +436,397 @@ tr.dragging{opacity:0.4;}
 <script>
 // ============================================================
 // DEFAULT PROCESS PARAMETER DEFINITIONS
-// To amend permanently: add/remove/reorder entries here.
-// unit: '' means a section-divider row (no min/max inputs).
+// To amend permanently: update this fixed list from the approved master workbook.
 // ============================================================
 const DEFAULT_PARAMS = [
-  {process:"Line Speed",unit:"pcs/hr"},
-  {process:"Acid Cleaning Tank 1",unit:"%"},
-  {process:"Acid Cleaning Tank 1",unit:"pH"},
-  {process:"Acid Cleaning Tank 1",unit:"Temperature"},
-  {process:"Acid Cleaning Tank 1",unit:"Dosing (Ltr/hr)"},
-  {process:"Acid Cleaning Tank 1",unit:"CAA (Ltr/hr)"},
-  {process:"Acid Cleaning Tank 2",unit:"%"},
-  {process:"Acid Cleaning Tank 2",unit:"pH"},
-  {process:"Acid Cleaning Tank 2",unit:"Temperature"},
-  {process:"Acid Cleaning Tank 2",unit:"Dosing (Ltr/hr)"},
-  {process:"Acid Cleaning Tank 2",unit:"CAA (Ltr/hr)"},
-  {process:"Acid Shower",unit:""},
-  {process:"Acid Bath",unit:"Temperature"},
-  {process:"Alkaline Cleaning Tank 1",unit:"EFC-12%"},
-  {process:"Alkaline Cleaning Tank 1",unit:"EMC Coupon %"},
-  {process:"Alkaline Cleaning Tank 1",unit:"Kleen B 156 %"},
-  {process:"Alkaline Cleaning Tank 1",unit:"pH"},
-  {process:"Alkaline Cleaning Tank 1",unit:"Temperature"},
-  {process:"Alkaline Cleaning Tank 1",unit:"Dosing (Ltr/hr)"},
-  {process:"Alkaline Cleaning Tank 1",unit:"CAA (Ltr/hr)"},
-  {process:"Alkaline Cleaning Tank 2",unit:"EFC-12%"},
-  {process:"Alkaline Cleaning Tank 2",unit:"EMC Coupon %"},
-  {process:"Alkaline Cleaning Tank 2",unit:"Kleen B 156 %"},
-  {process:"Alkaline Cleaning Tank 2",unit:"pH"},
-  {process:"Alkaline Cleaning Tank 2",unit:"Temperature"},
-  {process:"Alkaline Cleaning Tank 2",unit:"Dosing (Ltr/hr)"},
-  {process:"Alkaline Cleaning Tank 2",unit:"CAA (Ltr/hr)"},
-  {process:"Hot Bath",unit:"Temperature"},
-  {process:"Cleaning Brush Water Spray & Rotation",unit:""},
-  {process:"Hot Rinse",unit:"Temperature (Hot)"},
-  {process:"Hot Rinse",unit:"pH"},
-  {process:"Hot Water Pump to Acid Shower",unit:""},
-  {process:"Hot Water Tank",unit:"Temperature"},
-  {process:"Hot Water Tank",unit:"pH"},
-  {process:"Blower",unit:""},
-  {process:"Coagulant",unit:"CN Strength %"},
-  {process:"Coagulant",unit:"Former Release Agent %"},
-  {process:"Coagulant",unit:"CaCO3 %"},
-  {process:"Coagulant",unit:"Stirrer Speed Hz"},
-  {process:"Coagulant",unit:"Pump Speed Hz"},
-  {process:"Coagulant",unit:"pH"},
-  {process:"Coagulant",unit:"Temperature"},
-  {process:"Coagulant",unit:"W-Agent Dosing (ml/hr)"},
-  {process:"Coagulant",unit:"Ammonia Dosing (ml/hr)"},
-  {process:"Coagulant",unit:"Mix Tank No."},
-  {process:"Oven B",unit:"Temperature"},
-  {process:"Former Temp. After Oven B",unit:"LHS Top"},
-  {process:"Former Temp. After Oven B",unit:"RHS Top"},
-  {process:"Former Temp. After Oven B",unit:"LHS Bottom"},
-  {process:"Former Temp. After Oven B",unit:"RHS Bottom"},
-  {process:"Latex Dip",unit:"TSC %"},
-  {process:"Latex Dip",unit:"Stirrer speed (Hz)"},
-  {process:"Latex Dip",unit:"pH"},
-  {process:"Latex Dip",unit:"Temperature"},
-  {process:"Latex Dip",unit:"Mix Tank No."},
-  {process:"Latex Dip",unit:"Latex level (mm)"},
-  {process:"C1 Oven",unit:"Temperature"},
-  {process:"C2 Oven",unit:"Temperature"},
-  {process:"Pre Leach 1",unit:"Temperature"},
-  {process:"Pre Leach 2",unit:"Temperature"},
-  {process:"Pre Leach 3",unit:"Temperature"},
-  {process:"Pre Leach 4",unit:"Temperature"},
-  {process:"Pre Leach 5",unit:"Temperature"},
-  {process:"Pre Leach 6",unit:"Temperature"},
-  {process:"CCP 1",unit:"Rotameter"},
-  {process:"CCP 1",unit:"flow rate"},
-  {process:"Blower",unit:""},
-  {process:"Polymer",unit:"TSC %"},
-  {process:"Polymer",unit:"Temperature"},
-  {process:"Lower Main Oven",unit:"Temperature"},
-  {process:"Main Oven (Temp)",unit:"Zone 1"},
-  {process:"Main Oven (Temp)",unit:"Zone 2"},
-  {process:"Main Oven (Temp)",unit:"Zone 3"},
-  {process:"Main Oven (Temp)",unit:"Zone 4"},
-  {process:"Main Oven (Temp)",unit:"Zone 5"},
-  {process:"Main Oven (Temp)",unit:"Average"},
-  {process:"After Main Oven",unit:"Glove Temperature"},
-  {process:"After Main Oven",unit:"Former Temperature"},
-  {process:"Cooling 1",unit:"Temperature"},
-  {process:"Cooling 2",unit:"Temperature"},
-  {process:"Cooling 3",unit:"Temperature"},
-  {process:"Chlorine",unit:"ppm"},
-  {process:"Chlorine",unit:"Temperature"},
-  {process:"Soak",unit:"Water from M/O Scrubber Front"},
-  {process:"Soak",unit:"pH"},
-  {process:"Neutralizer",unit:"pH"},
-  {process:"CCP 2",unit:"Rinse 3 Temperature"},
-  {process:"CCP 2",unit:"Rinse 3 pH"},
-  {process:"CCP 2",unit:"Rinse 4 Temperature"},
-  {process:"CCP 2",unit:"Rinse 4 pH"},
-  {process:"Blower",unit:""},
-  {process:"Coating Tank",unit:"TSC %"},
-  {process:"Coating Tank",unit:"Temperature"},
-  {process:"Coating Tank",unit:"Tank No."},
-  {process:"Coating Tank",unit:"Tank Level (cm)"},
-  {process:"CCP 3",unit:"D Oven"},
-  {process:"After D Oven",unit:"Glove Temperature"},
-  {process:"After D Oven",unit:"Former Temperature"},
+  {
+    "process": "Alkaline Protein",
+    "unit": "Dosing Pump Flow Rate (L/hr)"
+  },
+  {
+    "process": "Alkaline Protein",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Alkaline Protein",
+    "unit": "Strength (%)"
+  },
+  {
+    "process": "Alkaline Protein",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Salt Tank",
+    "unit": "Salt Tank Strength (%)"
+  },
+  {
+    "process": "Salt Tank",
+    "unit": "Salt Tank Temp (°C)"
+  },
+  {
+    "process": "Acid 1",
+    "unit": "Acid 1 CAA Flow Rate (L/hr)"
+  },
+  {
+    "process": "Acid 1",
+    "unit": "Acid 1 CAA Flow Rate (Merging) (L/hr)"
+  },
+  {
+    "process": "Acid 1",
+    "unit": "Acid 1 Level (mm)"
+  },
+  {
+    "process": "Acid 1",
+    "unit": "Acid 1 Strength (%)"
+  },
+  {
+    "process": "Acid 1",
+    "unit": "Acid 1 Temperature (°C)"
+  },
+  {
+    "process": "Acid 2",
+    "unit": "Acid 2 CAA Flow Rate (L/hr)"
+  },
+  {
+    "process": "Acid 2",
+    "unit": "Acid 2 Dosing pump flow rate (L/hr)"
+  },
+  {
+    "process": "Acid 2",
+    "unit": "Acid 2 Level (mm)"
+  },
+  {
+    "process": "Acid 2",
+    "unit": "Acid 2 Strength (%)"
+  },
+  {
+    "process": "Acid 2",
+    "unit": "Acid 2 Temperature (°C)"
+  },
+  {
+    "process": "Acid 3",
+    "unit": "Acid 3 Level (mm)"
+  },
+  {
+    "process": "Acid 3",
+    "unit": "Acid 3 Temperature (°C)"
+  },
+  {
+    "process": "Acid Neutralizer/ Acid Bath",
+    "unit": "Hot Water Recycle Flow Rate (L/hr)"
+  },
+  {
+    "process": "Acid Neutralizer/ Acid Bath",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Acid Neutralizer/ Acid Bath",
+    "unit": "NaOH Flow Rate (L/hr)"
+  },
+  {
+    "process": "Acid Neutralizer/ Acid Bath",
+    "unit": "pH"
+  },
+  {
+    "process": "Acid Neutralizer/ Acid Bath",
+    "unit": "Strength (%)"
+  },
+  {
+    "process": "Acid Neutralizer/ Acid Bath",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "CAA Flow Rate EFC (L/hr)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "CAA Flow Rate EMC (L/hr)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "Flow Rate EMC (Merge) (L/hr)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "Dosing Pump Flow Rate (L/hr)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "Strength EFC (%)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "Strength EMC (%)"
+  },
+  {
+    "process": "Alkaline 1",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Alkaline 2",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Alkaline 2",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Hot Bath",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Hot Bath",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Hot Bath",
+    "unit": "Water Flow Rate (L/hr)"
+  },
+  {
+    "process": "Cleaning Brush",
+    "unit": "Raw Water Flow Rate (L/hr)"
+  },
+  {
+    "process": "Cleaning Brush",
+    "unit": "Recycle HR Flow Rate (L/hr)"
+  },
+  {
+    "process": "Hot Rinse",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Hot Rinse",
+    "unit": "pH"
+  },
+  {
+    "process": "Hot Water",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Hot Water",
+    "unit": "pH"
+  },
+  {
+    "process": "Hot Water",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Hot Water",
+    "unit": "Water Flow Rate (L/hr)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "Coag PCC (%)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "CN Strength (%)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "Dip Tank Level (mm)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "Former Release Agent - Nobel (%)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "Former Release Agent-Cyclaron (%)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "Former Release Agent-PFCA (%)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "pH"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Coagulant",
+    "unit": "X111 Dipping (%)"
+  },
+  {
+    "process": "B Oven",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "B Oven",
+    "unit": "FTABO (Bottom) (°C)"
+  },
+  {
+    "process": "B Oven",
+    "unit": "FTABO (Top) (°C)"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH (Aohua)"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH (Apcotex)"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH (BST)"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH (Kumho)"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH (LG)"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH (Nantex)"
+  },
+  {
+    "process": "Latex",
+    "unit": "pH (Synthomer)"
+  },
+  {
+    "process": "Latex",
+    "unit": "Level (mm)"
+  },
+  {
+    "process": "Latex",
+    "unit": "Temperature (Nantex) (°C)"
+  },
+  {
+    "process": "Latex",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Latex",
+    "unit": "TSC (%)"
+  },
+  {
+    "process": "Dipping Swelling Index",
+    "unit": "Dipping Swelling Index (%)"
+  },
+  {
+    "process": "C Oven",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Preleach 6",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Preleach 6",
+    "unit": "Water Flow Rate (Recycle from Cooling 2) (L/hr)"
+  },
+  {
+    "process": "Main Oven",
+    "unit": "Zone 1 Temperature (°C)"
+  },
+  {
+    "process": "Main Oven",
+    "unit": "Zone 2 Temperature (°C)"
+  },
+  {
+    "process": "Main Oven",
+    "unit": "Zone 3 Temperature (°C)"
+  },
+  {
+    "process": "Main Oven",
+    "unit": "Zone 4 Temperature (°C)"
+  },
+  {
+    "process": "Main Oven",
+    "unit": "Zone 5 Temperature (°C)"
+  },
+  {
+    "process": "Main Oven",
+    "unit": "GTAMO (°C)"
+  },
+  {
+    "process": "Cooling Tank 1",
+    "unit": "Water Flow Rate (L/hr)"
+  },
+  {
+    "process": "Cooling Tank 3",
+    "unit": "Water Flow Rate (L/hr)"
+  },
+  {
+    "process": "Chlorine",
+    "unit": "Chlorine Flow Rate (kg/hr)"
+  },
+  {
+    "process": "Soak Tank",
+    "unit": "Flow rate (L/hr)"
+  },
+  {
+    "process": "Soak Tank",
+    "unit": "pH"
+  },
+  {
+    "process": "Polymer",
+    "unit": "pH"
+  },
+  {
+    "process": "Polymer",
+    "unit": "Temp (°C)"
+  },
+  {
+    "process": "Polymer",
+    "unit": "TSC (Before filter) (%)"
+  },
+  {
+    "process": "Rinse 3",
+    "unit": "pH"
+  },
+  {
+    "process": "Rinse 3",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Rinse 4",
+    "unit": "Hot Water Flow Rate (Boiler water) (L/hr)"
+  },
+  {
+    "process": "Rinse 4",
+    "unit": "pH"
+  },
+  {
+    "process": "Rinse 4",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Coating",
+    "unit": "CC (%)"
+  },
+  {
+    "process": "Coating",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "Coating",
+    "unit": "TSC (%)"
+  },
+  {
+    "process": "D Oven",
+    "unit": "Temperature (°C)"
+  },
+  {
+    "process": "D Oven",
+    "unit": "GTADO (°C)"
+  }
 ];
 
 // ============================================================
@@ -557,19 +847,21 @@ const PLANTS=[
 
 // TOOLTIP_CONFIG_START
 const TOOLTIP_TEXTS = {
-  productSelect: "Choose the product code whose control limit versions you want to view or edit.",
+  productSelect: "Type directly in the product dropdown to filter products, then select a match to view or edit its control limit versions.",
+  lineFilter: "Filter the version history to versions that apply to a selected production line.",
   addProduct: "Create a new product record before adding control limit versions.",
-  addVersion: "Add a new control limit version for the selected product.",
+  addVersion: "Add a new fixed-sequence control limit version for the selected product.",
   bulkUpload: "Upload an Excel workbook with Version and Limits sheets to create one product/version in bulk.",
-  exportData: "Export the current browser demo data as JSON for backup or transfer.",
-  importData: "Import previously exported demo JSON into this browser's local demo storage.",
+  downloadUploadTemplate: "Download the Excel bulk upload template, including Version details, Plant/Line scope, and the default parameter list.",
+  openSaveFile: "Load a portable JSON save file and use it as the product/version database without running the local server.",
+  downloadSaveCopy: "Download the current database as a JSON save file copy for transfer or backup.",
   editTooltips: "Edit help text shown when users hover over controls. SQLite Mode can write edits back into this HTML file.",
   effectiveDate: "The date when this control limit version starts to apply.",
   revisionNo: "The revision number shown in the version history.",
-  versionType: "Permanent versions stay active until replaced. Deviation Request (DR) versions require an end date.",
-  endDate: "Required for DR versions; this is the last date the deviation request applies.",
+  versionType: "Permanent versions stay active until replaced. Change Request versions require an end date.",
+  endDate: "Required for Change Request versions; this is the last date the change request applies.",
   plantLineScope: "Select the plants and production lines that this control limit version applies to.",
-  processLimits: "Edit the process, parameter/unit, minimum, and maximum limits. Section rows can group related parameters.",
+  processLimits: "Review the fixed parameter sequence and key in the minimum and maximum limits. The sequence comes from the default master list.",
   viewVersion: "Open a read-only view of this saved version.",
   deleteVersion: "Delete this version from the active storage mode."
 };
@@ -580,22 +872,70 @@ const TOOLTIP_TEXTS = {
 // ============================================================
 const LOCAL_KEY = 'hrt_cldb';
 const TOOLTIP_LOCAL_KEY = 'hrt_cldb_tooltips';
+const SAVE_HANDLE_DB = 'hrt_cldb_save_file_handle';
 let storage = null;
 let storageMode = 'demo';
 let db = { products: [], versions: {} };
 let currentProduct = null;
+let productSearchTerm = '';
+let productComboOpen = false;
+let productComboActiveIndex = -1;
+let selectedLineFilter = '';
 let selPlants = [];
 let selLines = [];
 let liveParams = [];
-let dragSrcIdx = null;
 let pendingBulkUpload = null;
-let activeTooltips = Object.assign({}, TOOLTIP_TEXTS, JSON.parse(localStorage.getItem(TOOLTIP_LOCAL_KEY) || '{}'));
+let bulkPreviewPage = 1;
+const BULK_PREVIEW_PAGE_SIZE = 30;
+let saveFileHandle = null;
+let fileStorageWritable = false;
+let activeTooltips = normalizeTooltips(JSON.parse(localStorage.getItem(TOOLTIP_LOCAL_KEY) || '{}'));
 
 function normalizeDb(input) {
   const next = input && typeof input === 'object' ? input : {};
   next.products = Array.isArray(next.products) ? next.products : [];
   next.versions = next.versions && typeof next.versions === 'object' ? next.versions : {};
   next.products.forEach(p => { if (!next.versions[p.id]) next.versions[p.id] = []; });
+  return next;
+}
+
+function buildSavePayload() {
+  return {
+    schemaVersion: 1,
+    products: db.products || [],
+    versions: db.versions || {},
+    tooltips: activeTooltips || {},
+    lastSavedAt: new Date().toISOString()
+  };
+}
+
+function normalizeSavePayload(input) {
+  const source = input && typeof input === 'object' ? input : {};
+  const normalized = normalizeDb(source);
+  return {
+    schemaVersion: source.schemaVersion || 1,
+    products: normalized.products,
+    versions: normalized.versions,
+    tooltips: source.tooltips && typeof source.tooltips === 'object' ? source.tooltips : {},
+    lastSavedAt: source.lastSavedAt || ''
+  };
+}
+
+function downloadJson(filename, payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function normalizeTooltips(input) {
+  const source = input && typeof input === 'object' ? input : {};
+  const next = {};
+  Object.keys(TOOLTIP_TEXTS).forEach(key => {
+    next[key] = source[key] || TOOLTIP_TEXTS[key];
+  });
   return next;
 }
 
@@ -645,6 +985,73 @@ const LocalStorageStorage = {
   }
 };
 
+const FileStorage = {
+  mode: 'file',
+  async load() {
+    if (!saveFileHandle) return { products: [], versions: {} };
+    const file = await saveFileHandle.getFile();
+    const text = await file.text();
+    const payload = normalizeSavePayload(text.trim() ? JSON.parse(text) : {});
+    activeTooltips = normalizeTooltips(payload.tooltips || {});
+    return normalizeDb(payload);
+  },
+  async persist() {
+    const payload = buildSavePayload();
+    if (!saveFileHandle || !window.showSaveFilePicker) {
+      downloadJson('production_control_limits.save.json', payload);
+      fileStorageWritable = false;
+      showToast('Browser cannot write directly. Downloaded an updated save copy.');
+      return { ok: true, downloaded: true };
+    }
+    try {
+      if (await saveFileHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
+        const permission = await saveFileHandle.requestPermission({ mode: 'readwrite' });
+        if (permission !== 'granted') throw new Error('Permission to write the save file was not granted.');
+      }
+      const writable = await saveFileHandle.createWritable();
+      await writable.write(JSON.stringify(payload, null, 2));
+      await writable.close();
+      fileStorageWritable = true;
+      return { ok: true };
+    } catch (err) {
+      fileStorageWritable = false;
+      downloadJson('production_control_limits.save.json', payload);
+      showToast('Could not write to the selected file. Downloaded an updated save copy.');
+      return { ok: true, downloaded: true };
+    }
+  },
+  async addProduct(product) {
+    const id = product.id || 'prod_' + Date.now();
+    const saved = { id, name: product.name, desc: product.desc || product.description || '' };
+    const existing = db.products.find(p => p.id === id);
+    if (existing) {
+      existing.name = saved.name;
+      existing.desc = saved.desc;
+    } else {
+      db.products.push(saved);
+    }
+    db.versions[id] = db.versions[id] || [];
+    await this.persist();
+    return { product: saved, db };
+  },
+  async addVersion(productId, version) {
+    db.versions[productId] = db.versions[productId] || [];
+    db.versions[productId].unshift(version);
+    await this.persist();
+    return { version, db };
+  },
+  async deleteVersion(productId, versionId) {
+    db.versions[productId] = (db.versions[productId] || []).filter(v => v.id !== versionId);
+    await this.persist();
+    return { deleted: true, db };
+  },
+  async saveTooltips(tooltips) {
+    activeTooltips = tooltips;
+    await this.persist();
+    return { ok: true };
+  }
+};
+
 const SQLiteStorage = {
   mode: 'sqlite',
   async load() { return normalizeDb(await apiJson('/api/products')); },
@@ -665,15 +1072,18 @@ async function detectStorage() {
 function setModeBanner() {
   const banner = document.getElementById('modeBanner');
   if (!banner) return;
-  document.querySelectorAll('.demo-only').forEach(el => {
+  document.querySelectorAll('.no-sqlite-only').forEach(el => {
     el.style.display = storageMode === 'sqlite' ? 'none' : 'inline-flex';
   });
   if (storageMode === 'sqlite') {
     banner.className = 'mode-banner sqlite';
     banner.innerHTML = '<span class="mode-pill">SQLite Mode</span><span>Data is read from and saved directly to <strong>data/production_control_limits.sqlite</strong>.</span>';
+  } else if (storageMode === 'file') {
+    banner.className = 'mode-banner sqlite';
+    banner.innerHTML = '<span class="mode-pill">Save File Mode</span><span>Data is read from and auto-saved to the selected portable JSON save file' + (fileStorageWritable ? '.' : '. If direct write is blocked, use Download Save Copy.') + '</span>';
   } else {
     banner.className = 'mode-banner demo';
-    banner.innerHTML = '<span class="mode-pill">Demo Mode</span><span>GitHub/static mode cannot read the project SQLite file directly. Start the local server for SQLite Mode, or use export/import for browser-only demo data.</span>';
+    banner.innerHTML = '<span class="mode-pill">Demo Mode</span><span>No server/save file is active. Browser storage is temporary for this PC. Use Load File for portable persistence.</span>';
   }
 }
 
@@ -683,9 +1093,11 @@ function setModeBanner() {
 async function init(){
   storage = await detectStorage();
   storageMode = storage.mode;
+  if (storageMode !== 'sqlite') await tryRememberedSaveFile();
   setModeBanner();
   db = normalizeDb(await storage.load());
   renderProductDropdown();
+  renderLineFilter();
   renderPlantChips();
   setupTooltips();
   document.getElementById('v_date').value = new Date().toISOString().split('T')[0];
@@ -694,30 +1106,145 @@ async function init(){
 // ============================================================
 // PRODUCT DROPDOWN
 // ============================================================
+function getFilteredProducts(){
+  const query = productSearchTerm.toLowerCase();
+  return db.products.filter(p => !query || String(p.name || '').toLowerCase().includes(query));
+}
+
 function renderProductDropdown(){
   const sel = document.getElementById('productSelect');
-  const val = sel.value;
+  const input = document.getElementById('productComboInput');
+  const list = document.getElementById('productComboList');
+  const selectedId = currentProduct || sel.value || '';
   sel.innerHTML = '<option value="">— Select a product —</option>';
   db.products.forEach(p => {
     const o = document.createElement('option');
     o.value = p.id;
     o.textContent = p.name;
-    if (p.id === val) o.selected = true;
+    if (p.id === selectedId) o.selected = true;
     sel.appendChild(o);
   });
+  if (!list) return;
+  const products = getFilteredProducts();
+  if (productComboActiveIndex >= products.length) productComboActiveIndex = products.length - 1;
+  list.innerHTML = '';
+  if (!products.length) {
+    const empty = document.createElement('div');
+    empty.className = 'product-combobox-option empty';
+    empty.textContent = 'No matching products';
+    list.appendChild(empty);
+  } else {
+    products.forEach((p, idx) => {
+      const opt = document.createElement('div');
+      opt.className = 'product-combobox-option' + (idx === productComboActiveIndex ? ' active' : '');
+      opt.textContent = p.name;
+      opt.setAttribute('role', 'option');
+      opt.onmousedown = e => { e.preventDefault(); selectProductFromCombo(p.id); };
+      list.appendChild(opt);
+    });
+  }
+  list.classList.toggle('open', productComboOpen);
+  if (input) input.setAttribute('aria-expanded', productComboOpen ? 'true' : 'false');
 }
 
-function onProductChange(){
+function openProductCombo(){
+  productComboOpen = true;
+  renderProductDropdown();
+}
+
+function closeProductCombo(){
+  productComboOpen = false;
+  productComboActiveIndex = -1;
+  renderProductDropdown();
+}
+
+function onProductComboInput(){
+  const input = document.getElementById('productComboInput');
+  productSearchTerm = input ? input.value.trim() : '';
+  const selectedProduct = currentProduct ? db.products.find(p => p.id === currentProduct) : null;
+  if (selectedProduct && selectedProduct.name !== productSearchTerm) applyProductSelection('', false);
+  productComboOpen = true;
+  productComboActiveIndex = -1;
+  renderProductDropdown();
+}
+
+function onProductComboKeydown(event){
+  const products = getFilteredProducts();
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    productComboOpen = true;
+    productComboActiveIndex = products.length ? Math.min(productComboActiveIndex + 1, products.length - 1) : -1;
+    renderProductDropdown();
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    productComboOpen = true;
+    productComboActiveIndex = products.length ? Math.max(productComboActiveIndex - 1, 0) : -1;
+    renderProductDropdown();
+  } else if (event.key === 'Enter') {
+    if (productComboOpen && products[productComboActiveIndex]) {
+      event.preventDefault();
+      selectProductFromCombo(products[productComboActiveIndex].id);
+    }
+  } else if (event.key === 'Escape') {
+    event.preventDefault();
+    closeProductCombo();
+  }
+}
+
+function selectProductFromCombo(productId){
+  applyProductSelection(productId, true);
+  productComboOpen = false;
+  productComboActiveIndex = -1;
+  renderProductDropdown();
+}
+
+function applyProductSelection(productId, syncInput){
   const sel = document.getElementById('productSelect');
-  currentProduct = sel.value || null;
+  const input = document.getElementById('productComboInput');
+  currentProduct = productId || null;
+  const p = currentProduct ? db.products.find(x => x.id === currentProduct) : null;
+  if (sel) sel.value = currentProduct || '';
+  if (syncInput && input) {
+    productSearchTerm = p ? p.name : '';
+    input.value = productSearchTerm;
+  }
   document.getElementById('addVersionBtn').style.display = currentProduct ? 'inline-flex' : 'none';
   document.getElementById('noProductMsg').style.display = currentProduct ? 'none' : 'block';
   document.getElementById('versionPanel').style.display = currentProduct ? 'block' : 'none';
   if (currentProduct) {
-    const p = db.products.find(x => x.id === currentProduct);
     document.getElementById('panelProductName').textContent = p ? p.name : '';
     renderVersionTable();
+  } else {
+    document.getElementById('panelProductName').textContent = '';
   }
+}
+
+document.addEventListener('click', event => {
+  const combo = document.getElementById('productCombobox');
+  if (combo && !combo.contains(event.target)) closeProductCombo();
+});
+
+function renderLineFilter(){
+  const sel = document.getElementById('lineFilterSelect');
+  const val = sel.value || '';
+  const lines = [];
+  PLANTS.forEach(p => p.lines.forEach(line => {
+    if (!lines.includes(line)) lines.push(line);
+  }));
+  lines.sort((a,b)=>a-b);
+  sel.innerHTML = '<option value="">All Lines</option>' + lines.map(line => '<option value="' + line + '">L' + line + (line===105?' (RND)':'') + '</option>').join('');
+  sel.value = lines.includes(Number(val)) ? val : '';
+  selectedLineFilter = sel.value;
+}
+
+function onLineFilterChange(){
+  selectedLineFilter = document.getElementById('lineFilterSelect').value;
+  if (currentProduct) renderVersionTable();
+}
+
+function onProductChange(){
+  const sel = document.getElementById('productSelect');
+  applyProductSelection(sel.value || '', true);
 }
 
 // ============================================================
@@ -736,9 +1263,7 @@ async function saveNewProduct(){
   try {
     const result = await storage.addProduct({ id: 'prod_' + Date.now(), name, desc });
     db = normalizeDb(result.db || await storage.load());
-    renderProductDropdown();
-    document.getElementById('productSelect').value = result.product.id;
-    onProductChange();
+    selectProductFromCombo(result.product.id);
     closeAddProduct();
     showToast('Product added: ' + name);
   } catch (err) { alert(err.message || 'Unable to add product.'); }
@@ -749,25 +1274,32 @@ async function saveNewProduct(){
 // ============================================================
 function renderVersionTable(){
   const tbody = document.getElementById('versionTableBody');
-  const versions = db.versions[currentProduct] || [];
+  const allVersions = db.versions[currentProduct] || [];
+  const lineFilter = selectedLineFilter ? Number(selectedLineFilter) : null;
+  const versions = getDisplayedVersions();
+  if (!allVersions.length) {
+    tbody.innerHTML = '<tr><td colspan="12"><div class="empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>No versions yet. Click "Add New Version" to begin.</div></td></tr>';
+    return;
+  }
   if (!versions.length) {
-    tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>No versions yet. Click "Add New Version" to begin.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12"><div class="empty"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>No versions apply to L' + lineFilter + '. Choose All Lines to view all saved versions.</div></td></tr>';
     return;
   }
   const pName = db.products.find(p => p.id === currentProduct)?.name || '';
   tbody.innerHTML = versions.map((v,i) => {
-    const type = v.versionType || 'PERMANENT';
-    const typeClass = type === 'DEVIATION REQUEST (DR)' ? 'badge-info' : 'badge-gold';
+    const type = normalizeVersionType(v.versionType);
+    const typeClass = type === 'CHANGE REQUEST' ? 'badge-info' : 'badge-gold';
     return '<tr>' +
       '<td class="td-muted">' + escHtml(v.docno || '—') + '</td>' +
       '<td><span class="badge badge-gold">' + escHtml(pName) + '</span></td>' +
-      '<td>' + escHtml(v.date || v.effectiveDate || '—') + '</td>' +
+      '<td>' + escHtml(displayDate(v.date || v.effectiveDate || '')) + '</td>' +
       '<td><span class="badge ' + typeClass + '">' + escHtml(type) + '</span></td>' +
-      '<td>' + escHtml(v.endDate || '—') + '</td>' +
+      '<td>' + escHtml(displayDate(v.endDate || '')) + '</td>' +
       '<td><span class="badge badge-info">Rev ' + escHtml(v.revno ?? v.revisionNo ?? '') + '</span></td>' +
       '<td>' + escHtml((v.plants || []).join(', ') || '—') + '</td>' +
       '<td style="font-size:12px;color:var(--muted);">' + escHtml(formatLines(v.lines)) + '</td>' +
-      '<td class="td-muted">' + escHtml(v.editor || '—') + '</td>' +
+      '<td class="td-muted">' + escHtml(displayDateTime(getVersionLastEdited(v))) + '</td>' +
+      '<td class="td-muted">' + escHtml(v.editor || v.by || '—') + '</td>' +
       '<td style="max-width:200px;font-size:12px;color:var(--muted);">' + escHtml(v.remarks || '—') + '</td>' +
       '<td><div class="td-actions">' +
         '<button class="btn btn-outline btn-sm" onclick="viewVersion(' + i + ')" data-tip-key="viewVersion" title="View"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
@@ -777,10 +1309,22 @@ function renderVersionTable(){
   setupTooltips();
 }
 
-function formatLines(lines){
+function getDisplayedVersions(){
+  const allVersions = db.versions[currentProduct] || [];
+  const lineFilter = selectedLineFilter ? Number(selectedLineFilter) : null;
+  return lineFilter ? allVersions.filter(v => (v.lines || []).includes(lineFilter)) : allVersions;
+}
+
+function formatLines(lines, compact = true){
   if (!lines || !lines.length) return '—';
-  if (lines.length > 6) return lines.slice(0,6).map(l => 'L' + l).join(', ') + ' +' + (lines.length-6) + ' more';
-  return lines.map(l => 'L' + l).join(', ');
+  const formatted = lines.map(l => 'L' + l);
+  if (compact && lines.length > 6) return formatted.slice(0,6).join(', ') + ' +' + (lines.length-6) + ' more';
+  return formatted.join(', ');
+}
+function normalizeVersionType(type){
+  const value = String(type || 'PERMANENT').trim().toUpperCase();
+  if (value === 'DEVIATION REQUEST (DR)' || value === 'DR' || value === 'CHANGE REQUEST') return 'CHANGE REQUEST';
+  return 'PERMANENT';
 }
 
 // ============================================================
@@ -797,7 +1341,7 @@ function openNewVersion(){
   document.getElementById('v_type').value='PERMANENT';
   document.getElementById('v_end_date').value='';
   toggleVersionType();
-  liveParams=DEFAULT_PARAMS.map(r=>({ process:r.process, unit:r.unit, min:'', max:'', isSection:r.unit==='' }));
+  liveParams=DEFAULT_PARAMS.map(r=>({ process:r.process, unit:r.unit, min:'', max:'', isSection:false }));
   renderParamTable();
   document.getElementById('versionOverlay').classList.add('open');
   setupTooltips();
@@ -806,8 +1350,8 @@ function closeNewVersion(){document.getElementById('versionOverlay').classList.r
 function toggleVersionType(){
   const type = document.getElementById('v_type').value;
   const field = document.getElementById('endDateField');
-  field.style.display = type === 'DEVIATION REQUEST (DR)' ? 'flex' : 'none';
-  if (type !== 'DEVIATION REQUEST (DR)') document.getElementById('v_end_date').value = '';
+  field.style.display = type === 'CHANGE REQUEST' ? 'flex' : 'none';
+  if (type !== 'CHANGE REQUEST') document.getElementById('v_end_date').value = '';
 }
 
 // ============================================================
@@ -857,7 +1401,7 @@ function renderLineChips(){
 }
 
 // ============================================================
-// PARAM TABLE — render, add, delete, drag-reorder
+// PARAM TABLE - fixed numbered master list
 // ============================================================
 function renderParamTable(){
   const tbody=document.getElementById('processTableBody');
@@ -865,26 +1409,13 @@ function renderParamTable(){
   liveParams.forEach((row,i)=>{
     const tr=document.createElement('tr');
     tr.dataset.idx=i;
-    tr.draggable=true;
-    if(row.isSection){
-      tr.classList.add('sec-row');
-      tr.innerHTML='<td class="col-drag" draggable="false">⠿</td><td colspan="3"><input type="text" value="'+escAttr(row.process)+'" oninput="liveParams['+i+'].process=this.value" placeholder="Section label" style="background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;color:var(--gold);font-weight:500;width:100%;"/></td><td></td><td><button class="btn btn-green btn-sm" style="padding:3px 6px;" onclick="addRowBelow('+i+')" title="Add parameter row below"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></td><td><button class="btn btn-danger btn-sm" style="padding:3px 6px;" onclick="deleteRow('+i+')" title="Delete row"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></td>';
-    } else {
-      tr.innerHTML='<td class="col-drag">⠿</td><td class="col-proc"><input type="text" value="'+escAttr(row.process)+'" oninput="liveParams['+i+'].process=this.value" placeholder="Process name"/></td><td class="col-unit"><input type="text" value="'+escAttr(row.unit)+'" oninput="liveParams['+i+'].unit=this.value" placeholder="Unit / parameter"/></td><td class="col-val"><input type="number" value="'+escAttr(row.min)+'" oninput="liveParams['+i+'].min=this.value" step="any" placeholder="Min"/></td><td class="col-val"><input type="number" value="'+escAttr(row.max)+'" oninput="liveParams['+i+'].max=this.value" step="any" placeholder="Max"/></td><td><button class="btn btn-green btn-sm" style="padding:3px 6px;" onclick="addRowBelow('+i+')" title="Add parameter row below"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></td><td><button class="btn btn-danger btn-sm" style="padding:3px 6px;" onclick="deleteRow('+i+')" title="Delete row"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></td>';
-    }
-    tr.addEventListener('dragstart',e=>{ dragSrcIdx=i; tr.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
-    tr.addEventListener('dragend',()=>{ tr.classList.remove('dragging'); document.querySelectorAll('#processTableBody tr').forEach(r=>r.classList.remove('drag-over')); });
-    tr.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; document.querySelectorAll('#processTableBody tr').forEach(r=>r.classList.remove('drag-over')); tr.classList.add('drag-over'); });
-    tr.addEventListener('drop',e=>{ e.preventDefault(); if(dragSrcIdx===null||dragSrcIdx===i)return; const moved=liveParams.splice(dragSrcIdx,1)[0]; liveParams.splice(dragSrcIdx<i?i:i,0,moved); dragSrcIdx=null; renderParamTable(); });
+    tr.innerHTML='<td class="col-no">'+(i+1)+'</td><td class="col-proc"><input type="text" value="'+escAttr(row.process)+'" oninput="liveParams['+i+'].process=this.value" placeholder="Process name"/></td><td class="col-unit"><input type="text" value="'+escAttr(row.unit)+'" oninput="liveParams['+i+'].unit=this.value" placeholder="Unit / parameter"/></td><td class="col-val"><input type="number" value="'+escAttr(row.min)+'" oninput="liveParams['+i+'].min=this.value" step="any" placeholder="Min"/></td><td class="col-val"><input type="number" value="'+escAttr(row.max)+'" oninput="liveParams['+i+'].max=this.value" step="any" placeholder="Max"/></td>';
     tbody.appendChild(tr);
   });
 }
 function escHtml(s){return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escAttr(s){return escHtml(s).replace(/'/g,'&#39;');}
-function addSectionRow(){ liveParams.push({process:'', unit:'', min:'', max:'', isSection:true}); renderParamTable(); }
-function addRowBelow(idx){ liveParams.splice(idx+1,0,{process:liveParams[idx].process||'',unit:'',min:'',max:'',isSection:false}); renderParamTable(); }
-function deleteRow(idx){ if(liveParams.length<=1){showToast('Cannot delete the last row.');return;} liveParams.splice(idx,1); renderParamTable(); }
-function resetParamRows(){ if(!confirm('Reset all parameters to the default list? Any unsaved changes will be lost.'))return; liveParams=DEFAULT_PARAMS.map(r=>({process:r.process,unit:r.unit,min:'',max:'',isSection:r.unit===''})); renderParamTable(); showToast('Parameters reset to default.'); }
+function resetParamRows(){ if(!confirm('Reset all parameters to the default list? Any unsaved changes will be lost.'))return; liveParams=DEFAULT_PARAMS.map(r=>({process:r.process,unit:r.unit,min:'',max:'',isSection:false})); renderParamTable(); showToast('Parameters reset to default.'); }
 
 // ============================================================
 // SAVE / VIEW / DELETE VERSION
@@ -895,11 +1426,12 @@ async function saveVersion(){
   const versionType=document.getElementById('v_type').value;
   const endDate=document.getElementById('v_end_date').value;
   if(!date||revno===''){alert('Please fill in Effective Date and Revision No.');return;}
-  if(versionType==='DEVIATION REQUEST (DR)'&&!endDate){alert('Please fill in End Date for DEVIATION REQUEST (DR).');return;}
+  if(versionType==='CHANGE REQUEST'&&!endDate){alert('Please fill in End Date for CHANGE REQUEST.');return;}
   if(!selPlants.length){alert('Please select at least one plant.');return;}
   if(!selLines.length){alert('Please select at least one line.');return;}
-  const paramSnapshot=liveParams.map(r=>({process:r.process,unit:r.unit,min:r.min,max:r.max,isSection:r.isSection}));
-  const version={id:'v_'+Date.now(),docno:document.getElementById('v_docno').value.trim(),date,revno:parseInt(revno,10),versionType,endDate,plants:[...selPlants],lines:[...selLines].sort((a,b)=>a-b),remarks:document.getElementById('v_remarks').value.trim(),editor:'Current User',params:paramSnapshot};
+  const paramSnapshot=liveParams.map(r=>({process:r.process,unit:r.unit,min:r.min,max:r.max,isSection:false}));
+  const now = new Date().toISOString();
+  const version={id:'v_'+Date.now(),docno:document.getElementById('v_docno').value.trim(),date,revno:parseInt(revno,10),versionType,endDate,plants:[...selPlants],lines:[...selLines].sort((a,b)=>a-b),remarks:document.getElementById('v_remarks').value.trim(),editor:'Current User',createdAt:now,updatedAt:now,params:paramSnapshot};
   try {
     const result = await storage.addVersion(currentProduct, version);
     db = normalizeDb(result.db || await storage.load());
@@ -907,23 +1439,24 @@ async function saveVersion(){
   } catch(err) { alert(err.message || 'Unable to save version.'); }
 }
 function viewVersion(idx){
-  const v=(db.versions[currentProduct]||[])[idx];
-  const type=v.versionType||'PERMANENT';
+  const v=getDisplayedVersions()[idx];
+  const type=normalizeVersionType(v.versionType);
   let html='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">'+
-    viewCard('Document No.',v.docno||'—')+viewCard('Effective Date',v.date||v.effectiveDate||'—')+viewCard('Revision No.','Rev '+(v.revno??v.revisionNo??''))+viewCard('Version Type',type)+viewCard('End Date',v.endDate||'—')+viewCard('Plants',(v.plants||[]).join(', '))+viewCard('Remarks',v.remarks||'—','grid-column:span 3;')+'</div>'+
-    '<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;"><table class="view-ptable"><thead><tr><th>Process</th><th>Parameter / Unit</th><th>Min</th><th>Max</th></tr></thead><tbody>';
+    viewCard('Document No.',v.docno||'—')+viewCard('Effective Date',displayDate(v.date||v.effectiveDate||''))+viewCard('Revision No.','Rev '+(v.revno??v.revisionNo??''))+viewCard('Version Type',type)+viewCard('End Date',displayDate(v.endDate||''))+viewCard('Plants',(v.plants||[]).join(', '))+viewCard('Lines',formatLines(v.lines,false))+viewCard('Last Edited',displayDateTime(getVersionLastEdited(v)))+viewCard('By',v.editor||v.by||'—')+viewCard('Remarks',v.remarks||'—','grid-column:span 3;')+'</div>'+
+    '<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;"><table class="view-ptable"><thead><tr><th>No</th><th>Process</th><th>Parameter / Unit</th><th>Min</th><th>Max</th></tr></thead><tbody>';
   const rows=v.params||[];
   if(rows.length){
     let lastP='';
-    rows.forEach(r=>{ const isSec=r.isSection||(r.isSection===undefined&&r.unit===''); if(isSec){html+='<tr style="background:rgba(255,190,0,0.04);"><td class="vp" colspan="2">'+escHtml(r.process)+'</td><td class="val-na">—</td><td class="val-na">—</td></tr>';lastP=r.process;return;} const showP=r.process!==lastP;if(showP)lastP=r.process; html+='<tr><td class="vp">'+(showP?escHtml(r.process):'')+'</td><td class="vu">'+escHtml(r.unit)+'</td><td>'+(r.min!==undefined&&r.min!==''?escHtml(r.min):'<span class="val-na">—</span>')+'</td><td>'+(r.max!==undefined&&r.max!==''?escHtml(r.max):'<span class="val-na">—</span>')+'</td></tr>'; });
-  } else html+='<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:20px;">No parameter data.</td></tr>';
+    let paramNo=0;
+    rows.forEach(r=>{ const isSec=r.isSection||(r.isSection===undefined&&r.unit===''); if(isSec){return;} const showP=r.process!==lastP;if(showP)lastP=r.process; paramNo+=1; html+='<tr><td class="col-no">'+paramNo+'</td><td class="vp">'+(showP?escHtml(r.process):'')+'</td><td class="vu">'+escHtml(r.unit)+'</td><td>'+(r.min!==undefined&&r.min!==''?escHtml(r.min):'<span class="val-na">—</span>')+'</td><td>'+(r.max!==undefined&&r.max!==''?escHtml(r.max):'<span class="val-na">—</span>')+'</td></tr>'; });
+  } else html+='<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px;">No parameter data.</td></tr>';
   html+='</tbody></table></div>';
   document.getElementById('viewModalBody').innerHTML=html;
   document.getElementById('viewOverlay').classList.add('open');
 }
 function viewCard(label,value,extraStyle){return '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;'+(extraStyle||'')+'"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">'+escHtml(label)+'</div><div style="font-size:14px;font-weight:500;">'+escHtml(value)+'</div></div>';}
 async function deleteVersion(idx){
-  const versions=db.versions[currentProduct]||[];
+  const versions=getDisplayedVersions();
   const version=versions[idx];
   if(!version||!confirm('Delete this version? This cannot be undone.'))return;
   try { const result=await storage.deleteVersion(currentProduct,version.id); db=normalizeDb(result.db||await storage.load()); renderVersionTable(); showToast('Version deleted.'); }
@@ -975,21 +1508,120 @@ async function saveTooltipEdits(){
   const next={};
   Object.keys(activeTooltips).forEach(key=>{ next[key]=document.getElementById('tooltip_'+key).value.trim(); });
   activeTooltips=next;
-  try { await storage.saveTooltips(activeTooltips); showToast(storageMode==='sqlite'?'Tooltip text saved into HTML file.':'Tooltip text saved in this browser demo.'); closeTooltipEditor(); }
+  try {
+    await storage.saveTooltips(activeTooltips);
+    const msg = storageMode === 'sqlite' ? 'Tooltip text saved into HTML file.' : (storageMode === 'file' ? 'Tooltip text saved to save file.' : 'Tooltip text saved in this browser demo.');
+    showToast(msg);
+    closeTooltipEditor();
+  }
   catch(err){ alert(err.message||'Unable to save tooltip text.'); }
 }
 
 // ============================================================
-// DEMO IMPORT / EXPORT
+// PORTABLE SAVE FILE
 // ============================================================
-function exportDemoData(){
-  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='production_control_limit_demo_data.json'; a.click(); URL.revokeObjectURL(a.href);
+function idbRequest(req) {
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
 }
-function importDemoData(event){
-  const file=event.target.files[0]; event.target.value=''; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=()=>{ try{ const imported=normalizeDb(JSON.parse(reader.result)); saveLocalDb(imported); if(storageMode==='demo'){db=imported;renderProductDropdown();onProductChange();} showToast('Demo data imported into this browser.'); }catch(err){alert('Invalid demo JSON file.');} };
+function idbTxDone(tx) {
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+async function openHandleDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(SAVE_HANDLE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('handles');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function rememberSaveHandle(handle) {
+  if (!window.indexedDB || !handle) return;
+  const handleDb = await openHandleDb();
+  const tx = handleDb.transaction('handles', 'readwrite');
+  tx.objectStore('handles').put(handle, 'productionControlLimitSaveFile');
+  await idbTxDone(tx);
+}
+async function loadRememberedSaveHandle() {
+  if (!window.indexedDB) return null;
+  try {
+    const handleDb = await openHandleDb();
+    const tx = handleDb.transaction('handles', 'readonly');
+    return await idbRequest(tx.objectStore('handles').get('productionControlLimitSaveFile'));
+  } catch (err) {
+    return null;
+  }
+}
+async function tryRememberedSaveFile() {
+  if (!window.showOpenFilePicker) return;
+  const handle = await loadRememberedSaveHandle();
+  if (!handle) return;
+  try {
+    const permission = await handle.queryPermission({ mode: 'readwrite' });
+    if (permission !== 'granted') return;
+    saveFileHandle = handle;
+    storage = FileStorage;
+    storageMode = 'file';
+  } catch (err) {}
+}
+async function activateFileMode(handle) {
+  saveFileHandle = handle;
+  storage = FileStorage;
+  storageMode = 'file';
+  db = normalizeDb(await storage.load());
+  setModeBanner();
+  renderProductDropdown();
+  onProductChange();
+  setupTooltips();
+  await rememberSaveHandle(handle);
+  showToast('Save File Mode active.');
+}
+async function openSaveFile() {
+  if (window.showOpenFilePicker) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'Production Control Limit Save File', accept: { 'application/json': ['.json'] } }],
+        multiple: false
+      });
+      await activateFileMode(handle);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      alert(err.message || 'Unable to open save file.');
+      return;
+    }
+  }
+  document.getElementById('importDataFile').click();
+}
+function downloadSaveCopy() {
+  downloadJson('production_control_limits.save.json', buildSavePayload());
+}
+function importSaveFileFallback(event) {
+  const file = event.target.files[0]; event.target.value = ''; if(!file)return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const payload = normalizeSavePayload(JSON.parse(reader.result));
+      db = normalizeDb(payload);
+      activeTooltips = normalizeTooltips(payload.tooltips || {});
+      saveLocalDb(db);
+      localStorage.setItem(TOOLTIP_LOCAL_KEY, JSON.stringify(activeTooltips));
+      storage = LocalStorageStorage;
+      storageMode = 'demo';
+      setModeBanner();
+      renderProductDropdown();
+      onProductChange();
+      showToast('Save file loaded into browser storage. Use Download Save Copy after changes.');
+    } catch(err) {
+      alert('Invalid save JSON file.');
+    }
+  };
   reader.readAsText(file);
 }
 
@@ -997,11 +1629,40 @@ function importDemoData(event){
 // BULK EXCEL UPLOAD
 // ============================================================
 function openBulkUpload(){ document.getElementById('bulkUploadFile').click(); }
+function downloadUploadTemplate(){
+  if(!window.XLSX){alert('Excel template generator could not load. Please check internet access and try again.');return;}
+  const versionRows=[
+    ['Field','Details','Remark'],
+    ['Product Name','','Example: NB-AB-OLPF-030-SE-DKBU-EN6N'],
+    ['Product Description','','Optional short description of the product'],
+    ['Document No','','Example: FN P 15.0X'],
+    ['Version Type','PERMANENT','Use PERMANENT or CHANGE REQUEST'],
+    ['Effective Date',new Date().toISOString().split('T')[0],'Use YYYY-MM-DD'],
+    ['End Date','','Required only for CHANGE REQUEST'],
+    ['Revision No','','Example: 1'],
+    ['By','','Name of person preparing or updating this upload'],
+    ['Remarks','','Describe the reason or change summary'],
+    ['','',''],
+    ['Plant / Line Scope','Key in ALL or comma-separated values in the Details column','This section controls where the upload applies'],
+    ['Apply Plants','ALL','ALL or P1,P2,P8'],
+    ['Apply Lines','ALL','ALL or 1,2,3,105']
+  ];
+  const limitRows=[['No','Process','Parameter / Unit','Min','Max']];
+  DEFAULT_PARAMS.forEach((row,idx)=>limitRows.push([idx+1,row.process,row.unit,'','']));
+  const wb=XLSX.utils.book_new();
+  const versionWs=XLSX.utils.aoa_to_sheet(versionRows);
+  const limitsWs=XLSX.utils.aoa_to_sheet(limitRows);
+  versionWs['!cols']=[{wch:24},{wch:64},{wch:48}];
+  limitsWs['!cols']=[{wch:8},{wch:28},{wch:46},{wch:14},{wch:14}];
+  XLSX.utils.book_append_sheet(wb,versionWs,'Version');
+  XLSX.utils.book_append_sheet(wb,limitsWs,'Limits');
+  XLSX.writeFile(wb,'production_control_limit_bulk_upload_template.xlsx');
+}
 function handleBulkFile(event){
   const file=event.target.files[0]; event.target.value=''; if(!file)return;
   if(!window.XLSX){alert('Excel parser could not load. Please check internet access and try again.');return;}
   const reader=new FileReader();
-  reader.onload=e=>{ try{ const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); pendingBulkUpload=parseWorkbook(wb); renderBulkPreview(pendingBulkUpload); }catch(err){alert(err.message||'Unable to parse workbook.');} };
+  reader.onload=e=>{ try{ const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); pendingBulkUpload=parseWorkbook(wb); bulkPreviewPage=1; renderBulkPreview(pendingBulkUpload); }catch(err){alert(err.message||'Unable to parse workbook.');} };
   reader.readAsArrayBuffer(file);
 }
 function parseWorkbook(wb){
@@ -1012,36 +1673,97 @@ function parseWorkbook(wb){
   const fields={}; rows.forEach(r=>{ if(r[0])fields[String(r[0]).trim().toLowerCase()]=String(r[1]??'').trim(); });
   function req(name){const v=fields[name.toLowerCase()]; if(!v)throw new Error('Missing Version field: '+name); return v;}
   const productName=req('Product Name');
-  const versionTypeRaw=req('Version Type').toUpperCase();
-  if(versionTypeRaw!=='PERMANENT'&&versionTypeRaw!=='DEVIATION REQUEST (DR)')throw new Error('Version Type must be PERMANENT or DEVIATION REQUEST (DR).');
-  const versionType=versionTypeRaw;
+  const versionTypeRaw=String(req('Version Type')).trim().toUpperCase();
+  if(versionTypeRaw!=='PERMANENT'&&versionTypeRaw!=='CHANGE REQUEST'&&versionTypeRaw!=='DEVIATION REQUEST (DR)'&&versionTypeRaw!=='DR')throw new Error('Version Type must be PERMANENT or CHANGE REQUEST.');
+  const versionType=normalizeVersionType(versionTypeRaw);
   const effectiveDate=formatExcelDate(req('Effective Date'));
   const endDate=formatExcelDate(fields['end date']||'');
   const revisionNo=req('Revision No');
-  if(versionType==='DEVIATION REQUEST (DR)'&&!endDate)throw new Error('End Date is required for DEVIATION REQUEST (DR).');
+  const updatedBy=fields.by||'Bulk Upload';
+  const uploadTime=new Date().toISOString();
+  if(versionType==='CHANGE REQUEST'&&!endDate)throw new Error('End Date is required for CHANGE REQUEST.');
   const plants=parsePlants(req('Apply Plants'));
   const lines=parseLines(req('Apply Lines'),plants);
   const limitRows=XLSX.utils.sheet_to_json(limitsWs,{defval:''});
   if(!limitRows.length)throw new Error('Limits sheet must contain at least one row.');
-  const params=limitRows.map((r,idx)=>{
+  const params=[];
+  limitRows.forEach((r,idx)=>{
     const rowType=String(r['Row Type']||'PARAMETER').trim().toUpperCase();
-    if(rowType!=='SECTION'&&rowType!=='PARAMETER')throw new Error('Limits row '+(idx+2)+' has invalid Row Type.');
+    if(rowType==='SECTION')return;
+    if(rowType!=='PARAMETER')throw new Error('Limits row '+(idx+2)+' has invalid Row Type.');
     const process=String(r.Process||'').trim();
+    const unit=String(r['Parameter / Unit']||'').trim();
     if(!process)throw new Error('Limits row '+(idx+2)+' is missing Process.');
-    return {process,unit:rowType==='SECTION'?'':String(r['Parameter / Unit']||'').trim(),min:String(r.Min??'').trim(),max:String(r.Max??'').trim(),isSection:rowType==='SECTION'};
+    if(!unit)throw new Error('Limits row '+(idx+2)+' is missing Parameter / Unit.');
+    params.push({process,unit,min:String(r.Min??'').trim(),max:String(r.Max??'').trim(),isSection:false});
   });
-  return {product:{name:productName,desc:fields['product description']||''},version:{id:'v_'+Date.now(),docno:fields['document no']||'',date:effectiveDate,revno:parseInt(revisionNo,10),versionType,endDate,plants,lines,remarks:fields.remarks||'',editor:'Bulk Upload',params}};
+  if(!params.length)throw new Error('Limits sheet must contain at least one parameter row.');
+  return {product:{name:productName,desc:fields['product description']||''},version:{id:'v_'+Date.now(),docno:fields['document no']||'',date:effectiveDate,revno:parseInt(revisionNo,10),versionType,endDate,plants,lines,remarks:fields.remarks||'',editor:updatedBy,createdAt:uploadTime,updatedAt:uploadTime,params}};
 }
 function formatExcelDate(value){
   if(!value)return '';
-  if(value instanceof Date)return value.toISOString().split('T')[0];
+  function pad(n){return String(n).padStart(2,'0');}
+  function validYmd(y,m,d){
+    const dt=new Date(Date.UTC(y,m-1,d));
+    return dt.getUTCFullYear()===y&&dt.getUTCMonth()===m-1&&dt.getUTCDate()===d;
+  }
+  function ymd(y,m,d){return validYmd(y,m,d)?y+'-'+pad(m)+'-'+pad(d):'';}
+  if(value instanceof Date){
+    const y=value.getFullYear(), m=value.getMonth()+1, d=value.getDate();
+    return ymd(y,m,d) || String(value);
+  }
   if(typeof value==='number'){
-    const d=new Date(Math.round((value-25569)*86400*1000));
-    return d.toISOString().split('T')[0];
+    if(!Number.isFinite(value) || value < 1 || value > 60000)return String(value);
+    const utcDays=Math.floor(value-25569);
+    const utcValue=utcDays*86400*1000;
+    const d=new Date(utcValue);
+    return ymd(d.getUTCFullYear(),d.getUTCMonth()+1,d.getUTCDate()) || String(value);
   }
   const s=String(value).trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
-  const d=new Date(s); return Number.isNaN(d.getTime())?s:d.toISOString().split('T')[0];
+  if(!s)return '';
+  if(/^\d+(?:\.\d+)?$/.test(s)){
+    const serial=Number(s);
+    if(Number.isFinite(serial) && serial >= 1 && serial <= 60000){
+      const utcDays=Math.floor(serial-25569);
+      const utcValue=utcDays*86400*1000;
+      const d=new Date(utcValue);
+      return ymd(d.getUTCFullYear(),d.getUTCMonth()+1,d.getUTCDate()) || s;
+    }
+  }
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m)return ymd(Number(m[1]),Number(m[2]),Number(m[3])) || s;
+  m=s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if(m){
+    const a=Number(m[1]), b=Number(m[2]), y=Number(m[3]);
+    const dayFirst = a > 12;
+    const d = dayFirst ? a : b;
+    const month = dayFirst ? b : a;
+    return ymd(y,month,d) || s;
+  }
+  return s;
+}
+function displayDate(value){
+  const formatted = formatExcelDate(value);
+  return formatted || '—';
+}
+function displayDateTime(value){
+  if(!value)return '—';
+  const s=String(value).trim();
+  if(/^\d+(?:\.\d+)?$/.test(s))return displayDate(s);
+  const d=new Date(s);
+  if(Number.isNaN(d.getTime()))return displayDate(s);
+  return d.toLocaleString([], {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function getVersionLastEdited(version){
+  if(!version)return '';
+  if(version.updatedAt||version.createdAt||version.lastEditedAt)return version.updatedAt||version.createdAt||version.lastEditedAt;
+  const id=String(version.id||'');
+  const m=id.match(/^v_(\d{11,})/);
+  if(m){
+    const d=new Date(Number(m[1]));
+    if(!Number.isNaN(d.getTime()))return d.toISOString();
+  }
+  return '';
 }
 function parsePlants(value){
   const v=String(value).trim().toUpperCase();
@@ -1064,10 +1786,22 @@ function parseLines(value,plants){
 function renderBulkPreview(upload){
   const v=upload.version;
   const body=document.getElementById('bulkPreviewBody');
+  const totalPages=Math.max(1,Math.ceil((v.params||[]).length/BULK_PREVIEW_PAGE_SIZE));
+  bulkPreviewPage=Math.min(Math.max(1,bulkPreviewPage),totalPages);
+  const start=(bulkPreviewPage-1)*BULK_PREVIEW_PAGE_SIZE;
+  const pageRows=(v.params||[]).slice(start,start+BULK_PREVIEW_PAGE_SIZE);
+  const pager=(v.params||[]).length>BULK_PREVIEW_PAGE_SIZE
+    ? '<div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px;"><button class="btn btn-outline btn-sm" onclick="changeBulkPreviewPage(-1)" '+(bulkPreviewPage<=1?'disabled':'')+'>Previous</button><span style="font-size:12px;color:var(--muted);">Page '+bulkPreviewPage+' of '+totalPages+'</span><button class="btn btn-outline btn-sm" onclick="changeBulkPreviewPage(1)" '+(bulkPreviewPage>=totalPages?'disabled':'')+'>Next</button></div>'
+    : '';
   body.innerHTML='<div class="preview-list">'+
-    previewCard('Product',upload.product.name)+previewCard('Version Type',v.versionType)+previewCard('Effective Date',v.date)+previewCard('End Date',v.endDate||'—')+previewCard('Revision','Rev '+v.revno)+previewCard('Scope',v.plants.join(', ')+' / '+formatLines(v.lines))+
-    '</div><div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;"><table class="view-ptable"><thead><tr><th>Row Type</th><th>Process</th><th>Parameter / Unit</th><th>Min</th><th>Max</th></tr></thead><tbody>'+v.params.slice(0,30).map(r=>'<tr><td>'+escHtml(r.isSection?'SECTION':'PARAMETER')+'</td><td>'+escHtml(r.process)+'</td><td>'+escHtml(r.unit||'—')+'</td><td>'+escHtml(r.min||'—')+'</td><td>'+escHtml(r.max||'—')+'</td></tr>').join('')+'</tbody></table></div>'+(v.params.length>30?'<p style="color:var(--muted);font-size:12px;margin-top:10px;">Showing first 30 rows of '+v.params.length+'.</p>':'');
+    previewCard('Product',upload.product.name)+previewCard('Version Type',v.versionType)+previewCard('Effective Date',displayDate(v.date))+previewCard('End Date',displayDate(v.endDate||''))+previewCard('Revision','Rev '+v.revno)+previewCard('Last Edited',displayDateTime(getVersionLastEdited(v)))+previewCard('By',v.editor||v.by||'—')+previewCard('Plants',v.plants.join(', '))+previewCard('Lines',formatLines(v.lines,false))+
+    '</div><div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;"><table class="view-ptable"><thead><tr><th>No</th><th>Process</th><th>Parameter / Unit</th><th>Min</th><th>Max</th></tr></thead><tbody>'+pageRows.map((r,idx)=>'<tr><td class="col-no">'+(start+idx+1)+'</td><td>'+escHtml(r.process)+'</td><td>'+escHtml(r.unit||'—')+'</td><td>'+escHtml(r.min||'—')+'</td><td>'+escHtml(r.max||'—')+'</td></tr>').join('')+'</tbody></table></div>'+pager;
   document.getElementById('bulkPreviewOverlay').classList.add('open');
+}
+function changeBulkPreviewPage(delta){
+  if(!pendingBulkUpload)return;
+  bulkPreviewPage += delta;
+  renderBulkPreview(pendingBulkUpload);
 }
 function previewCard(label,value){return '<div class="preview-card"><div>'+escHtml(label)+'</div><strong>'+escHtml(value)+'</strong></div>';}
 function closeBulkPreview(){document.getElementById('bulkPreviewOverlay').classList.remove('open'); pendingBulkUpload=null;}
@@ -1076,7 +1810,7 @@ async function saveBulkUpload(){
   try{
     let product=db.products.find(p=>p.name.toLowerCase()===pendingBulkUpload.product.name.toLowerCase());
     if(!product){ const created=await storage.addProduct({id:'prod_'+Date.now(),name:pendingBulkUpload.product.name,desc:pendingBulkUpload.product.desc}); db=normalizeDb(created.db||await storage.load()); product=created.product; }
-    const saved=await storage.addVersion(product.id,pendingBulkUpload.version); db=normalizeDb(saved.db||await storage.load()); renderProductDropdown(); document.getElementById('productSelect').value=product.id; onProductChange(); closeBulkPreview(); showToast('Bulk upload saved successfully.');
+    const saved=await storage.addVersion(product.id,pendingBulkUpload.version); db=normalizeDb(saved.db||await storage.load()); selectProductFromCombo(product.id); closeBulkPreview(); showToast('Bulk upload saved successfully.');
   }catch(err){alert(err.message||'Unable to save bulk upload.');}
 }
 

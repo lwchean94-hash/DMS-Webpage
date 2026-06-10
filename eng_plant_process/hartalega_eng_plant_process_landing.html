@@ -3,20 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hartalega Foresight - OE Portal</title>
-<link rel="icon" type="image/png" href="Hartalega_Foresight_Logo.png?v=2">
+<title>Hartalega Foresight - Eng Plant &amp; Process</title>
+<link rel="icon" type="image/png" href="../Hartalega_Foresight_Logo.png?v=2">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  body {
-    zoom: 75%;
-    background: #0a1628;
-    overflow-x: hidden;
-  }
-  
-  .oe-page {
+
+  body { zoom: 75%; background: #0a1628; }
+
+  .eng-page {
     font-family: 'Inter', sans-serif;
     background: #0a1628;
     min-height: 100vh;
@@ -25,14 +21,14 @@
     overflow-x: hidden;
   }
 
-  .oe-gridbg {
+  .eng-gridbg {
     position: absolute;
     inset: 0;
     background-image:
       linear-gradient(rgba(255,190,0,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,190,0,0.03) 1px, transparent 1px),
       radial-gradient(circle at center, rgba(10,22,40,0.85) 0%, rgba(10,22,40,0.65) 100%),
-      url('Foresight_Background.jpg');
+      url('../Foresight_Background.jpg');
     background-size: 48px 48px, 48px 48px, cover, cover;
     background-position: center, center, center, center;
     background-repeat: repeat, repeat, no-repeat, no-repeat;
@@ -41,7 +37,7 @@
     z-index: 0;
   }
 
-  .oe-glow {
+  .eng-glow {
     position: absolute;
     top: -150px;
     left: 50%;
@@ -53,7 +49,7 @@
     z-index: 0;
   }
 
-  .oe-header {
+  .eng-header {
     position: relative;
     display: flex;
     align-items: center;
@@ -65,7 +61,7 @@
     backdrop-filter: blur(10px);
   }
 
-  .oe-back {
+  .eng-back {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -79,26 +75,40 @@
     text-decoration: none;
   }
 
-  .oe-back:hover {
+  .eng-back:hover {
     color: #FFBE00;
     border-color: rgba(255,190,0,0.5);
     background: rgba(255,190,0,0.06);
   }
 
-  .oe-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .eng-back svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 
-  .oe-htitle {
+  .eng-htitle {
     font-family: 'Rajdhani', sans-serif;
     font-size: 18px;
     font-weight: 700;
     color: #e8eaf0;
     letter-spacing: 1px;
   }
-  .oe-htitle span { color: #FFBE00; }
 
-  .oe-hright { font-size: 12px; color: rgba(200,210,230,0.6); display: flex; align-items: center; }
+  .eng-htitle span { color: #FFBE00; }
 
-  .oe-dot {
+  .eng-hright {
+    font-size: 12px;
+    color: rgba(200,210,230,0.6);
+    display: flex;
+    align-items: center;
+  }
+
+  .eng-dot {
     display: inline-block;
     width: 6px;
     height: 6px;
@@ -107,9 +117,10 @@
     margin-right: 8px;
     animation: blink 2s infinite;
   }
+
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  .oe-main {
+  .eng-main {
     position: relative;
     z-index: 10;
     padding: 48px 32px 60px;
@@ -117,12 +128,12 @@
     margin: 0 auto;
   }
 
-  .oe-hero {
+  .eng-hero {
     text-align: center;
     margin-bottom: 56px;
   }
 
-  .oe-hero-tag {
+  .eng-hero-tag {
     display: inline-block;
     font-size: 11px;
     letter-spacing: 3px;
@@ -135,7 +146,7 @@
     background: rgba(255,190,0,0.05);
   }
 
-  .oe-hero h1 {
+  .eng-hero h1 {
     font-family: 'Rajdhani', sans-serif;
     font-size: 38px;
     font-weight: 700;
@@ -144,27 +155,25 @@
     text-transform: uppercase;
   }
 
-  .oe-hero h1 span { color: #FFBE00; }
+  .eng-hero h1 span { color: #FFBE00; }
 
-  .oe-hero p {
+  .eng-hero p {
     font-size: 14px;
     color: rgba(200,210,230,0.5);
     margin-top: 12px;
-    max-width: 600px;
+    max-width: 620px;
     margin-left: auto;
     margin-right: auto;
     line-height: 1.6;
   }
 
-  /* Single-card centred layout — mirrors QA grid style but centred */
-  .oe-modules-grid {
+  .eng-modules-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
   }
 
-  /* KPI card spans both columns and is max ~520px wide, centred */
-  .oe-module-card {
+  .eng-module-card {
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,190,0,0.15);
     border-radius: 12px;
@@ -178,48 +187,41 @@
     position: relative;
     overflow: hidden;
     min-height: 240px;
-    grid-column: 1 / -1;
-    max-width: 520px;
-    margin: 0 auto;
-    width: 100%;
   }
 
-  .oe-module-card::before {
+  .live-link::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
+    top: 14px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34,197,94,.75);
+  }
+
+  .eng-module-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
     background: transparent;
     transition: background 0.25s;
   }
 
-  .oe-module-card:hover {
+  .eng-module-card:hover {
     background: rgba(255,190,0,0.05);
     border-color: rgba(255,190,0,0.4);
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   }
 
-  .oe-module-card:hover::before { background: #FFBE00; }
+  .eng-module-card:hover::before { background: #FFBE00; }
 
-  /* KPI metrics preview strip inside the card */
-  .oe-kpi-strip {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-
-  .oe-kpi-pill {
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    color: rgba(255,190,0,0.65);
-    border: 1px solid rgba(255,190,0,0.2);
-    padding: 3px 10px;
-    border-radius: 12px;
-    background: rgba(255,190,0,0.06);
-  }
-
-  .oe-icon {
+  .eng-icon {
     width: 56px;
     height: 56px;
     border-radius: 12px;
@@ -232,37 +234,45 @@
     transition: all 0.2s;
   }
 
-  .oe-icon svg { width: 28px; height: 28px; stroke: #FFBE00; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: all 0.2s; }
+  .eng-icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: #FFBE00;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: all 0.2s;
+  }
 
-  .oe-module-card:hover .oe-icon {
+  .eng-module-card:hover .eng-icon {
     background: rgba(255,190,0,0.1);
     border-color: rgba(255,190,0,0.4);
   }
 
-  .oe-title {
+  .eng-title {
     font-family: 'Rajdhani', sans-serif;
     font-size: 22px;
     font-weight: 600;
     color: #e8eaf0;
     letter-spacing: 0.5px;
-    margin-bottom: 12px;
-    line-height: 1.2;
+    margin-bottom: 10px;
   }
 
-  .oe-desc {
-    font-size: 14px;
+  .eng-desc {
+    font-size: 13px;
     color: rgba(200,210,230,0.45);
     line-height: 1.6;
-    flex-grow: 1;
   }
 
-  .oe-arrow {
-    margin-top: 24px;
+  .eng-arrow {
+    margin-top: auto;
+    padding-top: 22px;
     display: flex;
     align-items: center;
     gap: 6px;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: rgba(255,190,0,0.6);
     text-transform: uppercase;
@@ -272,108 +282,61 @@
     transition: all 0.25s;
   }
 
-  .oe-module-card:hover .oe-arrow {
+  .eng-module-card:hover .eng-arrow {
     opacity: 1;
     transform: translateX(0);
     color: #FFBE00;
   }
 
-  .oe-arrow svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-  /* Coming-soon placeholder cards */
-  .oe-placeholder-card {
-    background: rgba(255,255,255,0.01);
-    border: 1px dashed rgba(255,190,0,0.08);
-    border-radius: 12px;
-    padding: 36px 32px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: 240px;
-    opacity: 0.5;
+  .eng-arrow svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
   }
 
-  .oe-coming {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba(255,190,0,0.3);
-    margin-top: auto;
-  }
-
-  .oe-footer {
-    position: relative;
-    text-align: center;
-    padding: 24px 32px 32px;
-    font-size: 11px;
-    color: rgba(200,210,230,0.25);
-    letter-spacing: 0.5px;
+  @media (max-width: 760px) {
+    body { zoom: 100%; }
+    .eng-header { padding: 14px 18px; gap: 12px; }
+    .eng-hright { display: none; }
+    .eng-main { padding: 36px 18px 48px; }
+    .eng-modules-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
+<div class="eng-page">
+  <div class="eng-gridbg"></div>
+  <div class="eng-glow"></div>
 
-<div class="oe-page">
-  <div class="oe-gridbg"></div>
-  <div class="oe-glow"></div>
-
-  <header class="oe-header">
-    <a href="index.html" class="oe-back">
+  <header class="eng-header">
+    <a href="../index.html" class="eng-back">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       Main portal
     </a>
-
-    <div class="oe-htitle">
-      HARTALEGA <span>FORESIGHT</span>
-    </div>
-
-    <div class="oe-hright">
-      <span class="oe-dot"></span> OE Network Connected
-    </div>
+    <div class="eng-htitle">ENG PLANT <span>&amp; PROCESS</span></div>
+    <div class="eng-hright"><span class="eng-dot"></span> Live engineering systems</div>
   </header>
 
-  <main class="oe-main">
+  <main class="eng-main">
+    <section class="eng-hero">
+      <div class="eng-hero-tag">Engineering Division</div>
+      <h1>Eng Plant <span>&amp; Process</span></h1>
+      <p>Select an engineering plant and process module to access live dashboards, analytics, and equipment intelligence views.</p>
+    </section>
 
-    <div class="oe-hero">
-      <div class="oe-hero-tag">Operation Excellence Division</div>
-      <h1>OE <span>Portal</span></h1>
-      <p>Access and manage operational KPI thresholds, efficiency targets, and performance benchmarks across all production plants and lines.</p>
-    </div>
-
-    <div class="oe-modules-grid">
-
-      <!-- Operation KPI Database — primary card -->
-      <a href="./oe_details/hartalega_oe_kpi_db.html" class="oe-module-card">
-        <div class="oe-icon">
-          <svg viewBox="0 0 24 24">
-            <line x1="18" y1="20" x2="18" y2="10"/>
-            <line x1="12" y1="20" x2="12" y2="4"/>
-            <line x1="6" y1="20" x2="6" y2="14"/>
-            <polyline points="2 20 22 20"/>
-          </svg>
+    <section class="eng-modules-grid">
+      <a href="http://ngc-appuat01-v:3000/d/pr472vq/hartalega-ai-vision-dashboard?orgId=1&from=now-6h&to=now&timezone=browser&var-plant=P9&var-line=L104&refresh=5s" class="eng-module-card live-link">
+        <div class="eng-icon">
+          <svg viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M19 19l3 3"/></svg>
         </div>
-        <div class="oe-title">Operation KPI Database</div>
-        <div class="oe-desc">Define and manage KPI thresholds for production lines across all plants. Set targets and control limits for line speed, utility consumption per thousand pieces, OEE, and other operational performance indicators.</div>
-        <div class="oe-kpi-strip">
-          <span class="oe-kpi-pill">Line Speed</span>
-          <span class="oe-kpi-pill">Utility Consumption (ptp)</span>
-          <span class="oe-kpi-pill">OEE Target</span>
-          <span class="oe-kpi-pill">+ More KPIs</span>
-        </div>
-        <div class="oe-arrow">
-          Access Database
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
+        <div class="eng-title">AI Vision Analysis</div>
+        <div class="eng-desc">Open the live AI vision dashboard for plant and line camera analysis, defect intelligence, and visual process monitoring.</div>
+        <div class="eng-arrow">Open Live Dashboard <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
       </a>
-
-    </div>
-
+    </section>
   </main>
-
-  <footer class="oe-footer">
-    Hartalega Foresight IoT Platform &nbsp;·&nbsp; Operation Excellence Division &nbsp;·&nbsp; Confidential
-  </footer>
 </div>
-
 </body>
 </html>
